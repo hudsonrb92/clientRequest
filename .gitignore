@@ -1,0 +1,4 @@
+.vscode/*
+credentials.py
+__pycache__/*
+cliente/*
