@@ -3,8 +3,10 @@ from html2text import html2text
 import datetime
 from credentials import CREDENTIALS
 
-identificador_estabelecimento_saude = 48
+identificador_estabelecimento_saude = 49
 url_laudo = f'http://sistema.elaudos.com/api/laudos/{identificador_estabelecimento_saude}'
+url_estudo = 'http://sistema.elaudos.com/api/estudo/%s'
+url_profissional = 'http://sistema.elaudos.com/api/profissional/%s'
 url_login = 'http://sistema.elaudos.com/api/login'
 
 cred = CREDENTIALS
@@ -20,40 +22,42 @@ response_laudos = requests.get(url=url_laudo, headers=head)
 laudos = response_laudos.json()
 
 for laudo in laudos:
-    texto = html2text(laudo['texto']).replace('\\', '').replace(
-        '*', '').replace(' Ó', 'Ó')
-    data_emissao = laudo['data_hora_emissao'].split('T')[0].replace('-', '')
-    hora_emissao = laudo['data_hora_emissao'].split('T')[1].split('.')[
-        0].replace(':', '')
-    accessionnumber = laudo['estudo_dicom']['accessionnumber']
-    arquivo_xml = open(
-        f"D:/XML-Laudos/{data_emissao}-{hora_emissao}-{accessionnumber}.XML", "a")
-    arquivo_laudo_texto = open(
-        f"D:/Laudos/{data_emissao}-{hora_emissao}-{accessionnumber}.txt", "a")
-    arquivo_laudo_texto.write(texto)
-    arquivo_laudo_texto.close()
 
-    xml = f"""
-    <?xml version="1.0" encoding="utf-8"?>
-    <DATAPACKET Version="2.0">
-        <ROWDATA>
-            <Operation>I</Operation>
-            <AccessionNumber>{accessionnumber}</AccessionNumber>
-            <ReportFolder>D:\Laudos\</ReportFolder>
-            <ReportName>{data_emissao}-{hora_emissao}-{accessionnumber}.txt</ReportName>
-            <Radiologist>{laudo['executor_laudo']['pessoa']['nome']}</Radiologist>
-            <MDLicense>{laudo['executor_laudo']['registro_conselho_trabalho']}</MDLicense>
-            <State>{laudo['executor_laudo']['estado_conselho_trabalho']['nome']}</State>
-        </ROWDATA>
-    </DATAPACKET>
-    """
+    data_hora_emissao = laudo['data_hora_emissao']
+    data_hora_revisao = laudo['data_hora_revisao']
+    identificador = laudo['identificador']
+    identificador_estudo_dicom = laudo['identificador_estudo_dicom']
+    integrado = laudo['integrado']
+    numero_exames_relacionados = laudo['numero_exames_relacionados']
+    situacao = laudo['situacao']
+    situacao_envio_his = laudo['situacao_envio_his']
+    texto = laudo['texto']
+    identificador_profissional_saude = laudo['identificador_profissional_saude']
 
-    arquivo_xml.write(xml)
-    arquivo_xml.close()
+    response_estudo = requests.get(
+        url=url_estudo % identificador_estudo_dicom, headers=head)
+    estudo = response_estudo.json()
+    
+    accessionnumber = estudo['accessionnumber']
+    chave_primaria_origem = estudo['chave_primaria_origem']
+    data_hora_inclusao = estudo['data_hora_inclusao']
+    data_hora_ultima_alteracao = estudo['data_hora_ultima_alteracao']
+    data_hora_validacao = estudo['data_hora_validacao']
+    modalitiesinstudy = estudo['modalitiesinstudy']
+    nome_mae = estudo['nome_mae']
+    numberofinstances = estudo['numberofinstances']
+    numero_exames_ris = estudo['numero_exames_ris']
+    patientbirthdate = estudo['patientbirthdate']
+    patientid = estudo['patientid']
+    patientname = estudo['patientname']
+    patientsex = estudo['patientsex']
+    situacao_estudo = estudo['situacao']
+    situacao_laudo_estudo = estudo['situacao_laudo']
+    studydescription = estudo['studydescription']
+    studyid = estudo['studyid']
+    studyinstanceuid = estudo['studyinstanceuid']
+    studytime = estudo['studytime']
 
-    indetificador_laudo = laudo['identificador']
-    url_to_put = f'http://sistema.elaudos.com/api/laudo/{indetificador_laudo}'
-    print(url_to_put)
-    integra = requests.put(
-        url=url_to_put, headers=head)
-    print(integra.status_code)
+    profissional_s = requests.get(url=url_profissional %identificador_profissional_saude, headers=head) 
+    profissional_s = profissional_s.json()
+    profissional = profissional_s['']
