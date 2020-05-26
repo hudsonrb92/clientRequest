@@ -1,5 +1,5 @@
 class PerfilUsuarioEstabelecimentoSaude():
-    def __init__(self, identificador_perfil, identificador_usuario, identificador_estabelecimento_saude, data_inicial):
+    def __init__(self, identificador_perfil, identificador_estabelecimento_saude, data_inicial):
         self.__identificador_perfil = identificador_perfil
         self.__identificador_estabelecimento_saude = identificador_estabelecimento_saude
         self.__data_inicial = data_inicial
