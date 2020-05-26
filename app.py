@@ -200,3 +200,5 @@ for laudo in laudos:
         pues_repo = PerfilUsuarioEstabelecimentoSaudeRepositorio()
         pues_repo.insere_pues(sessao=sessao,
                               perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
+
+    sessao.rollback()
