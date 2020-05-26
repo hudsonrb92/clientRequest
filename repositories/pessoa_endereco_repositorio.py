@@ -7,4 +7,4 @@ class PessoaEnderecoRepositorio():
                                                    identificador_endereco=pessoa_endereco.identificador_endereco,
                                                    identificador_tipo_uso_endereco=pessoa_endereco.identificador_tipo_uso_endereco,
                                                    ativa=pessoa_endereco.ativa)
-        PessoaEnderecoQuery.insere_pessoa_endereco(sessao=sessao, pessoa_endereco=novo_pessoa_endereco)
+        PessoaEnderecoQuery().insere_pessoa_endereco(sessao=sessao, pessoa_endereco=novo_pessoa_endereco)
