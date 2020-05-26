@@ -24,21 +24,22 @@ from repositories.profissional_saude_repositorio import ProfissionalSaudeReposit
 from repositories.usuario_repositorio import UsuarioRepositorio
 
 identificador_estabelecimento_saude = 53
+numero_cnpj = 100
+codigo_ibge = 3137106
+cep = 38400299
+hoje = datetime.now()
+hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+
 url_laudo = f'http://sistema.elaudos.com/api/laudos/{identificador_estabelecimento_saude}'
 url_estudo = 'http://sistema.elaudos.com/api/estudo/%s'
 url_profissional = 'http://sistema.elaudos.com/api/profissional/%s'
 url_login = 'http://sistema.elaudos.com/api/login'
 url_usuario = 'http://sistema.elaudos.com/api/usuario/%s'
-numero_cnpj = 11337750000170
-codigo_ibge = 3512803
-cep = 13036225
-hoje = datetime.today()
 
 cred = CREDENTIALS
 
 make_login = requests.post(url=url_login, json=cred)
 token = make_login.json()['access_token']
-print(token)
 
 head = {'Authorization': 'Bearer ' + token}
 
@@ -96,18 +97,24 @@ for laudo in laudos:
 
     fabrica = fabrica_conexao.FabricaConexao()
     sessao = fabrica.criar_sessao()
-    print("Sessão criada ...")
+    hoje = datetime.now()
+    hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+    print(f"{hoje_data_hora} -> Sessão criada ...")
 
     pessoaEntidade = Pessoa(nome=nome, ativa=ativa)
     pessoaEntidade.identificador_sexo = identificador_sexo
     pessoaEntidade.data_nascimento = pessa_data_nascimento
     pessoaEntidade.identificador_raca = 1
 
-    print("Pessoa entidade Criada")
+    hoje = datetime.now()
+    hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+    print(f"{hoje_data_hora} ->Pessoa entidade Criada")
 
     usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador=False, ativo=usuario_ativo)
 
-    print("Usuario entidade Criado")
+    hoje = datetime.now()
+    hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+    print(f"{hoje_data_hora} -> Usuario entidade Criado")
     laudoEntidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao,
                                      identificador_estudo_dicom=identificador_estudo_dicom,
                                      situacao=situacao, situacao_envio_his=situacao_envio_his,
@@ -115,7 +122,10 @@ for laudo in laudos:
                                      identificador_profissional_saude=identificador_profissional_saude)
     laudoEntidade.numero_exames_relacionados = numero_exames_relacionados
     laudoEntidade.identificador_laudo_elaudos = identificador_laudo_elaudos
-    print("Laudo Entidade Criado")
+
+    hoje = datetime.now()
+    hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+    print(f"{hoje_data_hora} -> Laudo Entidade Criado")
 
     estado_local = EstadoRepositorio().pega_estado_por_sigla(sessao=sessao, sigla=estado_conselho_trabalho)
 
@@ -129,7 +139,9 @@ for laudo in laudos:
     endereco_entidade.bairro = 'Centro'
     endereco_entidade.cep = cep
 
-    print("Endereco Criado")
+    hoje = datetime.now()
+    hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+    print(f"{hoje_data_hora} -> Endereco Criado")
 
     # Criar entidade Profissional de saude
     profissional_saudeEntidade = ProfissionalSaude(ativo=ativo, identificador_pessoa=identificador_pessoa,
@@ -138,18 +150,27 @@ for laudo in laudos:
                                                    identificador_tipo_conselho_trabalho=1)
     profissional_saudeEntidade.assinatura_digitalizada = assinatura_digitalizada
 
-    print("profissional_saudeEntidade Criado")
+    hoje = datetime.now()
+    hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+    print(f"{hoje_data_hora} -> profissional_saudeEntidade Criado")
     pessoa_local = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(pessoaEntidade.nome, sessao)
 
     if pessoa_local:
-        print("Usuario ja existente")
+
+        hoje = datetime.now()
+        hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+        print(f"{hoje_data_hora} -> Usuario ja existente")
         estudo_local = EstudoDicomRepositorio().listar_por_studyinstanceuid(sessao,
                                                                             studyinstanceuid)
         if estudo_local:
             identificador_estudo_local = estudo_local.identificador
-            print("Exame Encontrado")
+            hoje = datetime.now()
+            hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+            print(f"{hoje_data_hora} -> Exame Encontrado")
         else:
-            print("Exame Nao Existente")
+            hoje = datetime.now()
+            hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+            print(f"{hoje_data_hora} -> Exame Nao Existente")
             continue
 
         profissional_saude_local = ProfissionalSaudeRepositorio().listar_profissional_saude(sessao,
@@ -158,38 +179,53 @@ for laudo in laudos:
         laudoEntidade.identificador_estudo_dicom = identificador_estudo_local
 
         if estudo_local.situacao_laudo == 'N':
-            print("Publicando Exame.")
+            hoje = datetime.now()
+            hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+            print(f"{hoje_data_hora} -> Publicando Exame.")
             laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade,
                                                                                       sessao=sessao)
             url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudoEntidade.identificador_laudo_elaudos}'
             integra = requests.put(url=url_to_put, headers=head)
         else:
-            print("Laudo Ja publicado")
+            hoje = datetime.now()
+            hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+            print(f"{hoje_data_hora} -> Laudo Ja publicado")
             url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudoEntidade.identificador_laudo_elaudos}'
             integra = requests.put(url=url_to_put, headers=head)
+            hoje = datetime.now()
+            hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
             print(integra)
 
     else:
-        print("Iniciando Processo de criação de usuario")
+        hoje = datetime.now()
+        hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+        print(f"{hoje_data_hora} -> Iniciando Processo de criação de usuario")
         # Criar pessoa
         pessoa_repositorio.PessoaRepositorio().cadastra_pessoa(pessoa=pessoaEntidade, sessao=sessao)
         pessoa_local_nova = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(nome=pessoaEntidade.nome,
                                                                                         sessao=sessao)
-        print("Iniciando Processo de criação de Endereco")
+
+        hoje = datetime.now()
+        hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+        print(f"{hoje_data_hora} -> Iniciando Processo de criação de Endereco")
         # Criar Endereco
         cidade = CidadeRepositorio().lista_cidade_por_cod_ibge(sessao=sessao, codigo_ibge=codigo_ibge)
         endereco_entidade.identificador_cidade = cidade.identificador
         endereco_repo = EnderecoRepositorio()
         endereco_repo.insere_endereco(sessao=sessao, endereco=endereco_entidade)
 
-        print("Iniciando Processo de criação de Profissional de saude")
+        hoje = datetime.now()
+        hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+        print(f"{hoje_data_hora} -> Iniciando Processo de criação de Profissional de saude")
         # Criar Profissional de saude
         profissional_saudeEntidade.identificador_pessoa = pessoa_local_nova.identificador
         profi_repo = ProfissionalSaudeRepositorio()
         profi_repo.inserir_profissional_saude(sessao=sessao,
                                               profissional_saude=profissional_saudeEntidade)
 
-        print("Iniciando Processo de criação de Pessoa_endereco")
+        hoje = datetime.now()
+        hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+        print(f"{hoje_data_hora} -> Iniciando Processo de criação de Pessoa_endereco")
         # Criar Pessoa_endereco
         identificador_endereco_novo = EnderecoRepositorio().lista_endereco_por_cep(sessao=sessao, cep=cep).identificador
         pessoa_endereco_entidade = PessoaEndereco(identificador_pessoa=pessoa_local_nova.identificador,
@@ -198,13 +234,17 @@ for laudo in laudos:
         pessoa_ende_repo = PessoaEnderecoRepositorio()
         pessoa_ende_repo.insere_pessoa_endereco(sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
 
-        print("Iniciando Processo de criação de Usuário")
+        hoje = datetime.now()
+        hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+        print(f"{hoje_data_hora} -> Iniciando Processo de criação de Usuário")
         # Criar Usuário
         usuarioEntidade.identificador_pessoa = pessoa_local_nova.identificador
         usuario_repo = UsuarioRepositorio()
         usuario_repo.inserir_usuario(usuario=usuarioEntidade, sessao=sessao)
 
-        print("Iniciando Processo de criação de Perfil Usuário Estabelecimento Saude")
+        hoje = datetime.now()
+        hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
+        print(f"{hoje_data_hora} -> Iniciando Processo de criação de Perfil Usuário Estabelecimento Saude")
         # Perfil Usuário Estabelecimento Saude
         perfil_usuario_estabelecimento_saude_entidade = PerfilUsuarioEstabelecimentoSaude(
             identificador_perfil='ROLE_MEDICO_EXECUTOR',
