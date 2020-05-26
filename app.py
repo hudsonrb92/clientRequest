@@ -177,7 +177,7 @@ for laudo in laudos:
         identificador_endereco_novo = EnderecoRepositorio().lista_endereco_por_cep(sessao=sessao, cep=cep)
         pessoa_endereco_entidade = PessoaEndereco(identificador_pessoa=pessoa_local_nova.identificador,
                                                   identificador_endereco=identificador_endereco_novo,
-                                                  identificador_tipo_uso_endereco='Comercial', ativa=True)
+                                                  identificador_tipo_endereco='Comercial', ativa=True)
         pessoa_ende_repo = PessoaEnderecoRepositorio()
         pessoa_ende_repo.insere_pessoa_endereco(sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
 
