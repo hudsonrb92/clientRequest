@@ -79,12 +79,12 @@ for laudo in laudos:
     studytime = estudo['studytime']
     profissional = requests.get(url=url_profissional % identificador_profissional_saude, headers=head).json()
     assinatura_digitalizada = profissional['assinatura_digitalizada']
-    ativo = profissional['ativo']
+    ativo = True
     estado_conselho_trabalho = profissional['estado_conselho_trabalho']['sigla']
     registro_conselho_trabalho = profissional['registro_conselho_trabalho']
     identificador_pessoa = profissional['pessoa']['identificador']
     nome = profissional['pessoa']['nome']
-    ativa = profissional['pessoa']['ativa']
+    ativa = True
     pessa_data_nascimento = profissional['pessoa']['data_nascimento']
     identificador_sexo = profissional['pessoa']['identificador_sexo']
     usuario_req = requests.get(url=url_usuario % identificador_pessoa, headers=head).json()
