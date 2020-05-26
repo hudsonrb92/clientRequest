@@ -109,6 +109,9 @@ class EstadoModel(Base):
     estado_conselho_trabalho = relationship("ProfissionalSaudeModel",
                                             foreign_keys='ProfissionalSaudeModel.identificador_estado_conselho_trabalho',
                                             backref='estado_conselho_trabalho', lazy='dynamic')
+    cidade = relationship("CidadeModel",
+                                            foreign_keys='CidadeModel.identificador_estado',
+                                            backref='cidade', lazy='dynamic')
 
 
 class EstudoDicomModel(Base):
@@ -308,7 +311,6 @@ class CidadeModel(Base):
     identificador = Column(Integer, primary_key=True)
     nome = Column(String, nullable=False)
     codigo_ibge = Column(Integer, nullable=False)
-    identificador_estado = Column(Integer, nullable=False)
+    identificador_estado = Column(Integer, ForeignKey(
+        'public.estado.identificador'), nullable=False)
     ativa = Column(Boolean, nullable=False)
-    estudo_dicom = relationship(
-        "EnderecoModel", back_populates="cidade")

@@ -1,11 +1,10 @@
 class EstudoDicom():
-    def __init__(self, studyinstanceuid, studydate, patientname, data_hora_inclusao, situacao_laudo,
+    def __init__(self, studyinstanceuid, studydate, patientname, situacao_laudo,
                  identificador_prioridade_estudo_dicom, numero_exames_ris, situacao, imagens_disponiveis,
                  origem_registro):
         self.__studyinstanceuid = studyinstanceuid
         self.__studydate = studydate
         self.__patientname = patientname
-        self.__data_hora_inclusao = data_hora_inclusao
         self.__situacao_laudo = situacao_laudo
         self.__identificador_prioridade_estudo_dicom = identificador_prioridade_estudo_dicom
         self.__numero_exames_ris = numero_exames_ris
@@ -24,10 +23,6 @@ class EstudoDicom():
     @property
     def patientname(self):
         return self.__patientname
-
-    @property
-    def data_hora_inclusao(self):
-        return self.__data_hora_inclusao
 
     @property
     def situacao_laudo(self):
@@ -60,10 +55,6 @@ class EstudoDicom():
     @patientname.setter
     def patientname(self,patientname):
         self.__patientname = patientname
-
-    @data_hora_inclusao.setter
-    def data_hora_inclusao(self,data_hora_inclusao):
-        self.__data_hora_inclusao = data_hora_inclusao
 
     @situacao_laudo.setter
     def situacao_laudo(self, situacao_laudo):

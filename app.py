@@ -19,10 +19,10 @@ from repositories.endereco_repositorio import EnderecoRepositorio
 from repositories.estabelecimento_saude_repositorios import EstabelecimentoSaudeRepositorio
 from repositories.estado_repositorio import EstadoRepositorio
 from repositories.estudo_dicom_repositorio import EstudoDicomRepositorio
+from repositories.perfil_usuario_estabelecimento_saude_repositorio import PerfilUsuarioEstabelecimentoSaudeRepositorio
 from repositories.pessoa_endereco_repositorio import PessoaEnderecoRepositorio
 from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio
 from repositories.usuario_repositorio import UsuarioRepositorio
-from repositories.perfil_usuario_estabelecimento_saude_repositorio import PerfilUsuarioEstabelecimentoSaudeRepositorio
 
 identificador_estabelecimento_saude = 49
 url_laudo = f'http://sistema.elaudos.com/api/laudos/{identificador_estabelecimento_saude}'
@@ -88,7 +88,7 @@ for laudo in laudos:
     identificador_sexo = profissional['pessoa']['identificador_sexo']
     usuario_req = requests.get(url=url_usuario % identificador_pessoa, headers=head).json()
     login = usuario_req['login']
-    login = str(login + registro_conselho_trabalho.split('')[0])
+    login = str(login + registro_conselho_trabalho.split(' ')[0])
     senha = registro_conselho_trabalho.split(' ')[0]
     senha_hasheada = hashlib.md5(senha.encode('utf8')).hexdigest()
     administrador = usuario_req['administrador']
@@ -97,23 +97,16 @@ for laudo in laudos:
     fabrica = fabrica_conexao.FabricaConexao()
     sessao = fabrica.criar_sessao()
 
-    pessoaEntidade = Pessoa(nome=nome, ativa=ativa, identificador_sexo=identificador_sexo)
+    pessoaEntidade = Pessoa(nome=nome, ativa=ativa)
+    pessoaEntidade.identificador_sexo = identificador_sexo
+
     usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador=administrador, ativo=usuario_ativo)
-    laudoEntidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao, data_hora_revisao=data_hora_revisao,
-                                     identificador=identificador, identificador_estudo_dicom=identificador_estudo_dicom,
-                                     integrado=integrado, numero_exames_relacionados=numero_exames_relacionados,
-                                     situacao=situacao, situacao_envio_his=situacao_envio_his, texto=texto,
+    laudoEntidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao,
+                                     identificador_estudo_dicom=identificador_estudo_dicom,
+                                     integrado=integrado, situacao=situacao, situacao_envio_his=situacao_envio_his,
+                                     texto=texto,
                                      identificador_profissional_saude=identificador_profissional_saude)
-    estudoEntidade = EstudoDicom(accessionnumber=accessionnumber, chave_primaria_origem=chave_primaria_origem,
-                                 data_hora_inclusao=data_hora_inclusao,
-                                 data_hora_ultima_alteracao=data_hora_ultima_alteracao,
-                                 data_hora_validacao=data_hora_validacao, modalitiesinstudy=modalitiesinstudy,
-                                 nome_mae=nome_mae, numberofinstances=numberofinstances,
-                                 numero_exames_ris=numero_exames_ris, patientbirthdate=patientbirthdate,
-                                 patientid=patientid, patientsex=patientsex, patientname=patientname,
-                                 situacao_estudo=situacao_estudo, situacao_laudo_estudo=situacao_laudo_estudo,
-                                 studydescription=studydescription, studyid=studyid, studyinstanceuid=studyinstanceuid,
-                                 studytime=studytime)
+    laudoEntidade.numero_exames_relacionados = numero_exames_relacionados
 
     estado_local = EstadoRepositorio().pega_estado_por_sigla(sessao=sessao, sigla=estado_conselho_trabalho)
 
@@ -176,5 +169,6 @@ for laudo in laudos:
                                                                                    identificador_pessoa=pessoa_local_nova.identificador).identificador
 
         perfil_usuario_estabelecimento_saude_entidade.identificador_usuario = identificador_usuario_novo
-        perfil_usuario_estabelecimento_saude_entidade.data_final = data_inicial=f'{hoje.year}-{hoje.month:02}-{hoje.day:02}'
-        PerfilUsuarioEstabelecimentoSaudeRepositorio().insere_pues(sessao=sessao,perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
+        perfil_usuario_estabelecimento_saude_entidade.data_final = data_inicial = f'{hoje.year}-{hoje.month:02}-{hoje.day:02}'
+        PerfilUsuarioEstabelecimentoSaudeRepositorio().insere_pues(sessao=sessao,
+                                                                   perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
