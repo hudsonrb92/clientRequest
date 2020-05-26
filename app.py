@@ -158,7 +158,7 @@ for laudo in laudos:
         laudoEntidade.identificador_estudo_dicom = identificador_estudo_local
         laudoEntidade.integrado = True
 
-        if estudo_local.situacao_laudo != 'S':
+        if estudo_local.situacao_laudo == 'N':
             print("Publicando Exame.")
             laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade,
                                                                                       sessao=sessao)

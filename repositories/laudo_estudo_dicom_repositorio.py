@@ -5,7 +5,6 @@ from queries.laudos_estudo_dicom_queries import LaudoEstudoDicomQuery
 class LaudoEstudoDicomRepositorio:
     def insere_laudo(self, laudo, sessao):
         laudoModel = LaudoEstudoDicomModel(data_hora_emissao=laudo.data_hora_emissao,
-                                           data_hora_revisao=laudo.data_hora_revisao,
                                            identificador_estudo_dicom=laudo.identificador_estudo_dicom,
                                            integrado=laudo.integrado,
                                            numero_exames_relacionados=laudo.numero_exames_relacionados,
