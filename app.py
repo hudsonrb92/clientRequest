@@ -96,13 +96,18 @@ for laudo in laudos:
 
     fabrica = fabrica_conexao.FabricaConexao()
     sessao = fabrica.criar_sessao()
+    print("Sessão criada ...")
 
     pessoaEntidade = Pessoa(nome=nome, ativa=ativa)
     pessoaEntidade.identificador_sexo = identificador_sexo
     pessoaEntidade.data_nascimento = pessa_data_nascimento
     pessoaEntidade.identificador_raca = 1
 
+    print("Pessoa entidade Criada")
+
     usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador=False, ativo=usuario_ativo)
+
+    print("Usuario entidade Criado")
     laudoEntidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao,
                                      identificador_estudo_dicom=identificador_estudo_dicom,
                                      integrado=integrado, situacao=situacao, situacao_envio_his=situacao_envio_his,
@@ -110,6 +115,7 @@ for laudo in laudos:
                                      identificador_profissional_saude=identificador_profissional_saude)
     laudoEntidade.numero_exames_relacionados = numero_exames_relacionados
     laudoEntidade.identificador_laudo_elaudos = identificador_laudo_elaudos
+    print("Laudo Entidade Criado")
 
     estado_local = EstadoRepositorio().pega_estado_por_sigla(sessao=sessao, sigla=estado_conselho_trabalho)
 
@@ -122,6 +128,8 @@ for laudo in laudos:
     endereco_entidade.bairro = 'Centro'
     endereco_entidade.cep = cep
 
+    print("Endereco Criado")
+
     # Criar entidade Profissional de saude
     profissional_saudeEntidade = ProfissionalSaude(ativo=ativo, identificador_pessoa=identificador_pessoa,
                                                    registro_conselho_trabalho=registro_conselho_trabalho,
@@ -129,9 +137,11 @@ for laudo in laudos:
                                                    identificador_tipo_conselho_trabalho=1)
     profissional_saudeEntidade.assinatura_digitalizada = assinatura_digitalizada
 
+    print("profissional_saudeEntidade Criado")
     pessoa_local = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(pessoaEntidade.nome, sessao)
 
     if pessoa_local:
+        print("Usuario ja existente")
         estudo_local = EstudoDicomRepositorio().listar_por_studyinstanceuid(sessao,
                                                                             studyinstanceuid)
         if estudo_local:
@@ -145,6 +155,7 @@ for laudo in laudos:
         laudoEntidade.integrado = True
 
         if estudo_local.situacao_laudo != 'S':
+            print("Exame já publicado localmente.")
             profissional_saude_local = ProfissionalSaudeRepositorio().listar_profissional_saude(sessao,
                                                                                                 pessoa_local.identificador)
             laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade,
@@ -156,23 +167,26 @@ for laudo in laudos:
             integra = requests.put(url=url_to_put, headers=head)
 
     else:
+        print("Iniciando Processo de criação de usuario")
         # Criar pessoa
         pessoa_repositorio.PessoaRepositorio().cadastra_pessoa(pessoa=pessoaEntidade, sessao=sessao)
         pessoa_local_nova = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(nome=pessoaEntidade.nome,
                                                                                         sessao=sessao)
-
+        print("Iniciando Processo de criação de Endereco")
         # Criar Endereco
         cidade = CidadeRepositorio().lista_cidade_por_cod_ibge(sessao=sessao, codigo_ibge=codigo_ibge)
         endereco_entidade.identificador_cidade = cidade.identificador
         endereco_repo = EnderecoRepositorio()
         endereco_repo.insere_endereco(sessao=sessao, endereco=endereco_entidade)
 
+        print("Iniciando Processo de criação de Profissional de saude")
         # Criar Profissional de saude
         profissional_saudeEntidade.identificador_pessoa = pessoa_local_nova.identificador
         profi_repo = ProfissionalSaudeRepositorio()
         profi_repo.inserir_profissional_saude(sessao=sessao,
                                               profissional_saude=profissional_saudeEntidade)
 
+        print("Iniciando Processo de criação de Pessoa_endereco")
         # Criar Pessoa_endereco
         identificador_endereco_novo = EnderecoRepositorio().lista_endereco_por_cep(sessao=sessao, cep=cep).identificador
         pessoa_endereco_entidade = PessoaEndereco(identificador_pessoa=pessoa_local_nova.identificador,
@@ -181,11 +195,13 @@ for laudo in laudos:
         pessoa_ende_repo = PessoaEnderecoRepositorio()
         pessoa_ende_repo.insere_pessoa_endereco(sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
 
+        print("Iniciando Processo de criação de Usuário")
         # Criar Usuário
         usuarioEntidade.identificador_pessoa = pessoa_local_nova.identificador
         usuario_repo = UsuarioRepositorio()
         usuario_repo.inserir_usuario(usuario=usuarioEntidade, sessao=sessao)
 
+        print("Iniciando Processo de criação de Perfil Usuário Estabelecimento Saude")
         # Perfil Usuário Estabelecimento Saude
         perfil_usuario_estabelecimento_saude_entidade = PerfilUsuarioEstabelecimentoSaude(
             identificador_perfil='ROLE_MEDICO_EXECUTOR',
