@@ -120,7 +120,7 @@ for laudo in laudos:
     estado_local = EstadoRepositorio().pega_estado_por_sigla(sessao=sessao, sigla=estado_conselho_trabalho)
 
     identificador_estabelecimento_saude_local = EstabelecimentoSaudeRepositorio().lista_estabelecimento(sessao=sessao,
-                                                                                                        numero_cnpj=numero_cnpj)
+                                                                                                        numero_cnpj=numero_cnpj).identificador
 
     # Criar Endereco Entidade
     endereco_entidade = Endereco(identificador_tipo_endereco='Avenida', logradouro='Gerado Por Integração', ativo=True)
