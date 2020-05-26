@@ -11,4 +11,4 @@ class EnderecoRepositorio():
         EnderecoQuery().insereEndereco(sessao=sessao,endereco=endereco_novo)
 
     def lista_endereco_por_cep(self,sessao,cep):
-        return EnderecoQuery.lista_endereco_por_cep(sessao=sessao,cep=cep)
+        return EnderecoQuery().lista_endereco_por_cep(sessao=sessao,cep=cep)

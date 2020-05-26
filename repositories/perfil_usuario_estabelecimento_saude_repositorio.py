@@ -10,4 +10,4 @@ class PerfilUsuarioEstabelecimentoSaudeRepositorio():
                                                              data_inicial=perfil_usuario_estabelecumento_saude.data_inicial,
                                                              data_final=perfil_usuario_estabelecumento_saude.data_final)
 
-        PerfilUsuarioEstabelecimentoSaudeQueries.insere_perfil(sessao=sessao,perfil_usuario=novo_perfil)
+        PerfilUsuarioEstabelecimentoSaudeQueries().insere_perfil(sessao=sessao,perfil_usuario=novo_perfil)
