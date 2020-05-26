@@ -24,13 +24,13 @@ from repositories.pessoa_endereco_repositorio import PessoaEnderecoRepositorio
 from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio
 from repositories.usuario_repositorio import UsuarioRepositorio
 
-identificador_estabelecimento_saude = 49
+identificador_estabelecimento_saude = 53
 url_laudo = f'http://sistema.elaudos.com/api/laudos/{identificador_estabelecimento_saude}'
 url_estudo = 'http://sistema.elaudos.com/api/estudo/%s'
 url_profissional = 'http://sistema.elaudos.com/api/profissional/%s'
 url_login = 'http://sistema.elaudos.com/api/login'
 url_usuario = 'http://sistema.elaudos.com/api/usuario/%s'
-cnpj = '4425244000177'
+numero_cnpj = '4425244000177'
 codigo_ibge = 0
 cep = 13036225
 hoje = datetime.today()
@@ -48,7 +48,7 @@ laudos = requests.get(url=url_laudo, headers=head).json()
 for laudo in laudos:
     data_hora_emissao = laudo['data_hora_emissao']
     data_hora_revisao = laudo['data_hora_revisao']
-    identificador = laudo['identificador']
+    identificador_laudo_elaudos = laudo['identificador']
     identificador_estudo_dicom = laudo['identificador_estudo_dicom']
     integrado = laudo['integrado']
     numero_exames_relacionados = laudo['numero_exames_relacionados']
@@ -107,11 +107,12 @@ for laudo in laudos:
                                      texto=texto,
                                      identificador_profissional_saude=identificador_profissional_saude)
     laudoEntidade.numero_exames_relacionados = numero_exames_relacionados
+    laudoEntidade.identificador_laudo_elaudos = identificador_laudo_elaudos
 
     estado_local = EstadoRepositorio().pega_estado_por_sigla(sessao=sessao, sigla=estado_conselho_trabalho)
 
     identificador_estabelecimento_saude_local = EstabelecimentoSaudeRepositorio().lista_estabelecimento(sessao=sessao,
-                                                                                                        cnpj=cnpj)
+                                                                                                        numero_cnpj=numero_cnpj)
 
     # Criar Endereco Entidade
     endereco_entidade = Endereco(identificador_tipo_endereco='Avenida', logradouro='Gerado Por Integração', ativo=True)
@@ -119,19 +120,27 @@ for laudo in laudos:
     # Criar entidade Profissional de saude
     profissional_saudeEntidade = ProfissionalSaude(ativo=ativo, identificador_pessoa=identificador_pessoa,
                                                    registro_conselho_trabalho=registro_conselho_trabalho,
-                                                   identificador_estado_conselho_trabalho=estado_local.identificador)
+                                                   identificador_estado_conselho_trabalho=estado_local.identificador,
+                                                   identificador_tipo_conselho_trabalho=1)
 
     pessoa_local = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(pessoaEntidade.nome, sessao)
 
     if pessoa_local:
-        identificador_estudo_local = EstudoDicomRepositorio().listar_por_studyinstanceuid(sessao,
-                                                                                          studyinstanceuid).identificador
+        estudo_local = EstudoDicomRepositorio().listar_por_studyinstanceuid(sessao,
+                                                                                          studyinstanceuid)
+        if estudo_local:
+            identificador_estudo_local = estudo_local.identificador
+        else:
+            print("Exame Nao Existente")
+            continue
         profissional_saude_local = ProfissionalSaudeRepositorio().listar_profissional_saude(sessao,
                                                                                             pessoa_local.identificador)
         laudoEntidade.identificador_profissional_saude = profissional_saude_local.identificador
         laudoEntidade.identificador_estudo_dicom = identificador_estudo_local
         laudoEntidade.integrado = True
         laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade, sessao=sessao)
+        url_to_put = f'http://sistema.elaudos.com/api/{laudoEntidade.identificador_laudo_elaudos}'
+        integra = requests.put(url=url_to_put, headers=head)
 
     else:
         # Criar pessoa
