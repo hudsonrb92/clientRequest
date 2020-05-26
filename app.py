@@ -193,9 +193,9 @@ for laudo in laudos:
             data_inicial=f'{hoje.year}-{hoje.month:02}-{hoje.day:02}')
 
         identificador_usuario_novo = UsuarioRepositorio().busca_user_por_id_pessoa(sessao=sessao,
-                                                                                   identificador_pessoa=pessoa_local_nova.identificador).identificador
+                                                                                   identificador_pessoa=pessoa_local_nova.identificador)
 
-        perfil_usuario_estabelecimento_saude_entidade.identificador_usuario = identificador_usuario_novo
+        perfil_usuario_estabelecimento_saude_entidade.identificador_usuario = identificador_usuario_novo.identificador
         perfil_usuario_estabelecimento_saude_entidade.data_final = data_inicial = f'{hoje.year}-{hoje.month:02}-{hoje.day:02}'
         pues_repo = PerfilUsuarioEstabelecimentoSaudeRepositorio()
         pues_repo.insere_pues(sessao=sessao,
