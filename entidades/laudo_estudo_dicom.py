@@ -1,12 +1,11 @@
 class LaudoEstudoDicom():
-    def __init__(self, identificador_estudo_dicom,data_hora_emissao,identificador_profissional_saude,texto,situacao,situacao_envio_his,integrado):
+    def __init__(self, identificador_estudo_dicom,data_hora_emissao,identificador_profissional_saude,texto,situacao,situacao_envio_his):
         self.__identificador_estudo_dicom =identificador_estudo_dicom
         self.__data_hora_emissao = data_hora_emissao
         self.__identificador_profissional_saude = identificador_profissional_saude
         self.__texto = texto
         self.__situacao = situacao
         self.__situacao_envio_his = situacao_envio_his
-        self.__integrado = integrado
 
     @property
     def identificador_estudo_dicom(self):
@@ -32,10 +31,6 @@ class LaudoEstudoDicom():
     def situacao_envio_his(self):
         return self.__situacao_envio_his
 
-    @property
-    def integrado(self):
-        return self.__integrado
-
     @identificador_estudo_dicom.setter
     def identificador_estudo_dicom(self,identificador_estudo_dicom):
         self.__identificador_estudo_dicom = identificador_estudo_dicom
@@ -59,7 +54,3 @@ class LaudoEstudoDicom():
     @situacao_envio_his.setter
     def situacao_envio_his(self, situacao_envio_his):
         self.__situacao_envio_his = situacao_envio_his
-
-    @integrado.setter
-    def integrado(self, integrado):
-        self.__integrado = integrado

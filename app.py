@@ -110,7 +110,7 @@ for laudo in laudos:
     print("Usuario entidade Criado")
     laudoEntidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao,
                                      identificador_estudo_dicom=identificador_estudo_dicom,
-                                     integrado=integrado, situacao=situacao, situacao_envio_his=situacao_envio_his,
+                                     situacao=situacao, situacao_envio_his=situacao_envio_his,
                                      texto=texto,
                                      identificador_profissional_saude=identificador_profissional_saude)
     laudoEntidade.numero_exames_relacionados = numero_exames_relacionados
@@ -156,7 +156,6 @@ for laudo in laudos:
                                                                                             pessoa_local.identificador)
         laudoEntidade.identificador_profissional_saude = profissional_saude_local.identificador
         laudoEntidade.identificador_estudo_dicom = identificador_estudo_local
-        laudoEntidade.integrado = True
 
         if estudo_local.situacao_laudo == 'N':
             print("Publicando Exame.")

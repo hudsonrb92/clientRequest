@@ -233,8 +233,6 @@ class LaudoEstudoDicomModel(Base):
     situacao = Column(String, nullable=False)
     numero_exames_relacionados = Column(Integer, nullable=True)
     situacao_envio_his = Column(String, nullable=False)
-    integrado = Column(Boolean, nullable=False)
-
 
 class ProfissionalSaudeModel(Base):
     __table_args__ = {'schema': 'public'}
