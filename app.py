@@ -5,7 +5,6 @@ import requests
 
 from credentials import CREDENTIALS
 from entidades.endereco import Endereco
-from entidades.estudo_dicom import EstudoDicom
 from entidades.laudo_estudo_dicom import LaudoEstudoDicom
 from entidades.perfil_usuario_estabelecimento_saude import PerfilUsuarioEstabelecimentoSaude
 from entidades.pessoa import Pessoa
@@ -134,7 +133,7 @@ for laudo in laudos:
 
     if pessoa_local:
         estudo_local = EstudoDicomRepositorio().listar_por_studyinstanceuid(sessao,
-                                                                                          studyinstanceuid)
+                                                                            studyinstanceuid)
         if estudo_local:
             identificador_estudo_local = estudo_local.identificador
         else:
@@ -148,7 +147,8 @@ for laudo in laudos:
         if estudo_local.situacao_laudo != 'S':
             profissional_saude_local = ProfissionalSaudeRepositorio().listar_profissional_saude(sessao,
                                                                                                 pessoa_local.identificador)
-            laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade, sessao=sessao)
+            laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade,
+                                                                                      sessao=sessao)
             url_to_put = f'http://sistema.elaudos.com/api/{laudoEntidade.identificador_laudo_elaudos}'
             integra = requests.put(url=url_to_put, headers=head)
         else:
@@ -158,28 +158,33 @@ for laudo in laudos:
     else:
         # Criar pessoa
         pessoa_repositorio.PessoaRepositorio().cadastra_pessoa(pessoa=pessoaEntidade, sessao=sessao)
-        pessoa_local_nova = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(nome=pessoaEntidade.nome, sessao=sessao)
+        pessoa_local_nova = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(nome=pessoaEntidade.nome,
+                                                                                        sessao=sessao)
 
         # Criar Endereco
         cidade = CidadeRepositorio().lista_cidade_por_cod_ibge(sessao=sessao, codigo_ibge=codigo_ibge)
         endereco_entidade.identificador_cidade = cidade.identificador
-        EnderecoRepositorio().insere_endereco(sessao=sessao, endereco=endereco_entidade)
+        endereco_repo = EnderecoRepositorio()
+        endereco_repo.insere_endereco(sessao=sessao, endereco=endereco_entidade)
 
         # Criar Profissional de saude
         profissional_saudeEntidade.identificador_pessoa = pessoa_local_nova.identificador
-        ProfissionalSaudeRepositorio().inserir_profissional_saude(sessao=sessao,
-                                                                  profissional_saude=profissional_saudeEntidade)
+        profi_repo = ProfissionalSaudeRepositorio()
+        profi_repo.inserir_profissional_saude(sessao=sessao,
+                                              profissional_saude=profissional_saudeEntidade)
 
         # Criar Pessoa_endereco
         identificador_endereco_novo = EnderecoRepositorio.lista_endereco_por_cep(sessao=sessao, cep=cep)
         pessoa_endereco_entidade = PessoaEndereco(identificador_pessoa=pessoa_local_nova.identificador,
                                                   identificador_endereco=identificador_endereco_novo,
                                                   identificador_tipo_uso_endereco='Comercial', ativa=True)
-        PessoaEnderecoRepositorio().insere_pessoa_endereco(sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
+        pessoa_ende_repo = PessoaEnderecoRepositorio()
+        pessoa_ende_repo.insere_pessoa_endereco(sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
 
         # Criar Usuário
         usuarioEntidade.identificador_pessoa = pessoa_local_nova.identificador
-        UsuarioRepositorio().inserir_usuario(usuario=usuarioEntidade, sessao=sessao)
+        usuario_repo = UsuarioRepositorio()
+        usuario_repo.inserir_usuario(usuario=usuarioEntidade, sessao=sessao)
 
         # Perfil Usuário Estabelecimento Saude
         perfil_usuario_estabelecimento_saude_entidade = PerfilUsuarioEstabelecimentoSaude(
@@ -192,5 +197,6 @@ for laudo in laudos:
 
         perfil_usuario_estabelecimento_saude_entidade.identificador_usuario = identificador_usuario_novo
         perfil_usuario_estabelecimento_saude_entidade.data_final = data_inicial = f'{hoje.year}-{hoje.month:02}-{hoje.day:02}'
-        PerfilUsuarioEstabelecimentoSaudeRepositorio().insere_pues(sessao=sessao,
-                                                                   perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
+        pues_repo = PerfilUsuarioEstabelecimentoSaudeRepositorio()
+        pues_repo.insere_pues(sessao=sessao,
+                              perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
