@@ -152,14 +152,14 @@ for laudo in laudos:
             print("Exame Nao Existente")
             continue
 
+        profissional_saude_local = ProfissionalSaudeRepositorio().listar_profissional_saude(sessao,
+                                                                                            pessoa_local.identificador)
         laudoEntidade.identificador_profissional_saude = profissional_saude_local.identificador
         laudoEntidade.identificador_estudo_dicom = identificador_estudo_local
         laudoEntidade.integrado = True
 
         if estudo_local.situacao_laudo != 'S':
             print("Exame já publicado localmente.")
-            profissional_saude_local = ProfissionalSaudeRepositorio().listar_profissional_saude(sessao,
-                                                                                                pessoa_local.identificador)
             laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade,
                                                                                       sessao=sessao)
             url_to_put = f'http://sistema.elaudos.com/api/{laudoEntidade.identificador_laudo_elaudos}'
