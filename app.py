@@ -174,7 +174,7 @@ for laudo in laudos:
                                               profissional_saude=profissional_saudeEntidade)
 
         # Criar Pessoa_endereco
-        identificador_endereco_novo = EnderecoRepositorio.lista_endereco_por_cep(sessao=sessao, cep=cep)
+        identificador_endereco_novo = EnderecoRepositorio().lista_endereco_por_cep(sessao=sessao, cep=cep)
         pessoa_endereco_entidade = PessoaEndereco(identificador_pessoa=pessoa_local_nova.identificador,
                                                   identificador_endereco=identificador_endereco_novo,
                                                   identificador_tipo_uso_endereco='Comercial', ativa=True)
