@@ -93,7 +93,7 @@ for laudo in laudos:
     senha = registro_conselho_trabalho.split(' ')[0]
     senha_hasheada = hashlib.md5(senha.encode('utf8')).hexdigest()
     administrador = usuario_req['administrador']
-    usuario_ativo = usuario_req['ativo']
+    usuario_ativo = True
 
     fabrica = fabrica_conexao.FabricaConexao()
     sessao = fabrica.criar_sessao()

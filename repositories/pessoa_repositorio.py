@@ -9,5 +9,5 @@ class PessoaRepositorio():
 
     def cadastra_pessoa(self, pessoa, sessao):
         nova_pessoa = PessoaModel(nome=pessoa.nome, data_nascimento=pessoa.data_nascimento,
-                             identificador_sexo=pessoa.identificador_sexo, identificador_raca=pessoa.identificador_raca)
+                             identificador_sexo=pessoa.identificador_sexo, identificador_raca=pessoa.identificador_raca, ativa=pessoa.ativa)
         PessoaQuery().insere_pessoa(nova_pessoa,sessao)
