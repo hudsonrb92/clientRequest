@@ -31,7 +31,7 @@ url_profissional = 'http://sistema.elaudos.com/api/profissional/%s'
 url_login = 'http://sistema.elaudos.com/api/login'
 url_usuario = 'http://sistema.elaudos.com/api/usuario/%s'
 numero_cnpj = '4425244000177'
-codigo_ibge = 0
+codigo_ibge = 3512803
 cep = 13036225
 hoje = datetime.today()
 
