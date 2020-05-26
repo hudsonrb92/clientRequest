@@ -85,6 +85,7 @@ for laudo in laudos:
     identificador_pessoa = profissional['pessoa']['identificador']
     nome = profissional['pessoa']['nome']
     ativa = profissional['pessoa']['ativa']
+    pessa_data_nascimento = profissional['pessoa']['data_nascimento']
     identificador_sexo = profissional['pessoa']['identificador_sexo']
     usuario_req = requests.get(url=url_usuario % identificador_pessoa, headers=head).json()
     login = usuario_req['login']
@@ -99,8 +100,10 @@ for laudo in laudos:
 
     pessoaEntidade = Pessoa(nome=nome, ativa=ativa)
     pessoaEntidade.identificador_sexo = identificador_sexo
+    pessoaEntidade.data_nascimento = pessa_data_nascimento
+    pessoaEntidade.identificador_raca = 1
 
-    usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador=administrador, ativo=usuario_ativo)
+    usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador='administrador', ativo=usuario_ativo)
     laudoEntidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao,
                                      identificador_estudo_dicom=identificador_estudo_dicom,
                                      integrado=integrado, situacao=situacao, situacao_envio_his=situacao_envio_his,
@@ -116,12 +119,16 @@ for laudo in laudos:
 
     # Criar Endereco Entidade
     endereco_entidade = Endereco(identificador_tipo_endereco='Avenida', logradouro='Gerado Por Integração', ativo=True)
+    endereco_entidade.complemento = ''
+    endereco_entidade.bairro = 'Centro'
+    endereco_entidade.cep = cep
 
     # Criar entidade Profissional de saude
     profissional_saudeEntidade = ProfissionalSaude(ativo=ativo, identificador_pessoa=identificador_pessoa,
                                                    registro_conselho_trabalho=registro_conselho_trabalho,
                                                    identificador_estado_conselho_trabalho=estado_local.identificador,
                                                    identificador_tipo_conselho_trabalho=1)
+    profissional_saudeEntidade.assinatura_digitalizada = assinatura_digitalizada
 
     pessoa_local = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(pessoaEntidade.nome, sessao)
 
