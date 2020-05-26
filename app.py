@@ -161,11 +161,11 @@ for laudo in laudos:
             print("Publicando Exame.")
             laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade,
                                                                                       sessao=sessao)
-            url_to_put = f'http://sistema.elaudos.com/api/{laudoEntidade.identificador_laudo_elaudos}'
+            url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudoEntidade.identificador_laudo_elaudos}'
             integra = requests.put(url=url_to_put, headers=head)
         else:
             print("Laudo Ja publicado")
-            url_to_put = f'http://sistema.elaudos.com/api/{laudoEntidade.identificador_laudo_elaudos}'
+            url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudoEntidade.identificador_laudo_elaudos}'
             integra = requests.put(url=url_to_put, headers=head)
             print(integra)
 
