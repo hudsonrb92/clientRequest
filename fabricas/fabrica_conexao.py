@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 class FabricaConexao():
@@ -9,7 +10,7 @@ class FabricaConexao():
         config = ConfigParser()
         config.read('./config.ini')
 
-        user = config['DATABASE']['']
+        user = config['DATABASE']['user']
         passwd = config['DATABASE']['passwd']
         host = config['DATABASE']['host']
         db = config['DATABASE']['db']
@@ -18,3 +19,11 @@ class FabricaConexao():
         engine = create_engine(f'postgresql://{user}:{passwd}@{host}:{port}/{db}')
 
         return engine
+
+    def criar_sessao(self):
+        conexao = self.conectar()
+        Session = sessionmaker()
+        Session.configure(bind=conexao)
+        session = Session()
+
+        return session

@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String, DateTime, Integer, Boolean, ForeignKey, LargeBinary
+from sqlalchemy import Column, String, DateTime, Integer, Boolean, ForeignKey, LargeBinary, Text, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 
-from ..fabricas import fabrica_conexao
+from fabricas import fabrica_conexao
 
 fabrica = fabrica_conexao.FabricaConexao()
 engine = fabrica.conectar()
@@ -14,8 +14,13 @@ class Sexo(Base):
     __table_args__ = {'schema': 'public'}
     __tablename__ = 'Sexo'
 
+    identificador = Column(Integer, primary_key=True)
+    descricao = Column(String, nullable=False)
+    sigla = Column(String, nullable=False)
+    ativo = Column(Boolean, nullable=False)
 
-class Pessoa(Base):
+
+class PessoaModel(Base):
     __table_args__ = {'schema': 'public'}
     __tablename__ = 'pessoa'
 
@@ -69,7 +74,7 @@ class EnderecoModel(Base):
     complemento = Column(Text, nullable=True)
     bairro = Column(String, nullable=True)
     cep = Column(Integer, nullable=False)
-    identificador_cidade = Column(Integer, nullable=False)
+    identificador_cidade = Column(Integer, ForeignKey('public.cidade.identificador'))
     ativo = Column(Boolean, nullable=False)
 
 
@@ -269,3 +274,41 @@ class UsuarioModel(Base):
     pessoa = relationship(
         "PessoaModel", backref=backref("usuario", lazy="dynamic"))
     ativo = Column(Boolean, nullable=False)
+
+
+class PerfilUsuarioEstabelecimentoSaudeModel(Base):
+    __table_args__ = {'schema': 'public'}
+    __tablename__ = "perfil_usuario_estabelecimento_saude"
+
+    uid = Column(Integer, primary_key=True)
+    bar = Column(String, primary_key=True)
+    identificador_perfil = Column(String, nullable=False)
+    identificador_usuario = Column(Integer, ForeignKey(
+        'public.usuario.identificador'), nullable=False)
+    identificador_estabelecimento_saude = Column(Integer, nullable=False)
+    data_inicial = Column(Date, nullable=False)
+    data_final = Column(Date, nullable=True)
+
+
+class PessoaEnderecoModel(Base):
+    __table_args__ = {'schema': 'public'}
+    __tablename__ = "pessoa_endereco"
+
+    uid = Column(Integer, primary_key=True)
+    bar = Column(String, primary_key=True)
+    identificador_pessoa = Column(Integer, nullable=False)
+    identificador_endereco = Column(Integer, nullable=False)
+    identificador_tipo_uso_endereco = Column(String, nullable=False)
+    ativa = Column(Boolean, nullable=False)
+
+class CidadeModel(Base):
+    __table_args__ = {'schema': 'public'}
+    __tablename__ = "cidade"
+
+    identificador = Column(Integer, primary_key=True)
+    nome = Column(String, nullable=False)
+    codigo_ibge = Column(Integer, nullable=False)
+    identificador_estado = Column(Integer, nullable=False)
+    ativa = Column(Boolean, nullable=False)
+    estudo_dicom = relationship(
+        "EnderecoModel", back_populates="cidade")
