@@ -301,7 +301,7 @@ class PessoaEnderecoModel(Base):
     bar = Column(String, primary_key=True)
     identificador_pessoa = Column(Integer, nullable=False)
     identificador_endereco = Column(Integer, nullable=False)
-    identificador_tipo_endereco = Column(String, nullable=False)
+    identificador_tipo_uso_endereco = Column(String, nullable=False)
     ativa = Column(Boolean, nullable=False)
 
 class CidadeModel(Base):
