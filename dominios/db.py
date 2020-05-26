@@ -283,12 +283,11 @@ class PerfilUsuarioEstabelecimentoSaudeModel(Base):
     __table_args__ = {'schema': 'public'}
     __tablename__ = "perfil_usuario_estabelecimento_saude"
 
-    identificador = Column(Integer, primary_key=True)
     identificador_perfil = Column(String, nullable=False)
     identificador_usuario = Column(Integer, ForeignKey(
         'public.usuario.identificador'), nullable=False)
     identificador_estabelecimento_saude = Column(Integer, nullable=False)
-    data_inicial = Column(Date, nullable=False)
+    data_inicial = Column(Date, nullable=False, primary_key=True)
     data_final = Column(Date, nullable=True)
 
 
@@ -296,8 +295,7 @@ class PessoaEnderecoModel(Base):
     __table_args__ = {'schema': 'public'}
     __tablename__ = "pessoa_endereco"
 
-    identificador = Column(Integer, primary_key=True)
-    identificador_pessoa = Column(Integer, nullable=False)
+    identificador_pessoa = Column(Integer, nullable=False, primary_key=True)
     identificador_endereco = Column(Integer, nullable=False)
     identificador_tipo_uso_endereco = Column(String, nullable=False)
     ativa = Column(Boolean, nullable=False)
