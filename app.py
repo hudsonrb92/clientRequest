@@ -140,19 +140,25 @@ for laudo in laudos:
         else:
             print("Exame Nao Existente")
             continue
-        profissional_saude_local = ProfissionalSaudeRepositorio().listar_profissional_saude(sessao,
-                                                                                            pessoa_local.identificador)
+
         laudoEntidade.identificador_profissional_saude = profissional_saude_local.identificador
         laudoEntidade.identificador_estudo_dicom = identificador_estudo_local
         laudoEntidade.integrado = True
-        laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade, sessao=sessao)
-        url_to_put = f'http://sistema.elaudos.com/api/{laudoEntidade.identificador_laudo_elaudos}'
-        integra = requests.put(url=url_to_put, headers=head)
+
+        if estudo_local.situacao_laudo != 'S':
+            profissional_saude_local = ProfissionalSaudeRepositorio().listar_profissional_saude(sessao,
+                                                                                                pessoa_local.identificador)
+            laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade, sessao=sessao)
+            url_to_put = f'http://sistema.elaudos.com/api/{laudoEntidade.identificador_laudo_elaudos}'
+            integra = requests.put(url=url_to_put, headers=head)
+        else:
+            print("Laudo Ja publicado")
+            integra = requests.put(url=url_to_put, headers=head)
 
     else:
         # Criar pessoa
         pessoa_repositorio.PessoaRepositorio().cadastra_pessoa(pessoa=pessoaEntidade, sessao=sessao)
-        pessoa_local_nova = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(pessoaEntidade.nome)
+        pessoa_local_nova = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(nome=pessoaEntidade.nome, sessao=sessao)
 
         # Criar Endereco
         cidade = CidadeRepositorio().lista_cidade_por_cod_ibge(sessao=sessao, codigo_ibge=codigo_ibge)
