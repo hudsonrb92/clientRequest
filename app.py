@@ -102,7 +102,7 @@ for laudo in laudos:
     pessoaEntidade.data_nascimento = pessa_data_nascimento
     pessoaEntidade.identificador_raca = 1
 
-    usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador='administrador', ativo=usuario_ativo)
+    usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador=False, ativo=usuario_ativo)
     laudoEntidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao,
                                      identificador_estudo_dicom=identificador_estudo_dicom,
                                      integrado=integrado, situacao=situacao, situacao_envio_his=situacao_envio_his,
