@@ -178,7 +178,7 @@ for laudo in laudos:
         laudoEntidade.identificador_profissional_saude = profissional_saude_local.identificador
         laudoEntidade.identificador_estudo_dicom = identificador_estudo_local
 
-        if estudo_local.situacao_laudo == 'N':
+        if estudo_local.situacao_laudo == 'N' and situacao=='D':
             hoje = datetime.now()
             hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
             print(f"{hoje_data_hora} -> Publicando Exame.")
