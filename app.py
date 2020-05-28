@@ -23,7 +23,7 @@ from repositories.pessoa_endereco_repositorio import PessoaEnderecoRepositorio
 from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio
 from repositories.usuario_repositorio import UsuarioRepositorio
 
-identificador_estabelecimento_saude = 53
+identificador_estabelecimento_saude = 50
 numero_cnpj = 100
 codigo_ibge = 3137106
 cep = 38400299
