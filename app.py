@@ -23,10 +23,10 @@ from repositories.pessoa_endereco_repositorio import PessoaEnderecoRepositorio
 from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio
 from repositories.usuario_repositorio import UsuarioRepositorio
 
-identificador_estabelecimento_saude = 50
-numero_cnpj = 100
-codigo_ibge = 3137106
-cep = 38400299
+identificador_estabelecimento_saude = 15
+numero_cnpj = 7902269000102
+codigo_ibge = 522010
+cep = 76100000
 hoje = datetime.now()
 hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
 
@@ -108,7 +108,7 @@ for laudo in laudos:
 
     hoje = datetime.now()
     hoje_data_hora = f"{hoje.day}/{hoje.month}/{hoje.year} {hoje.hour}:{hoje.minute}:{hoje.second}"
-    print(f"{hoje_data_hora} ->Pessoa entidade Criada")
+    print(f"{hoje_data_hora} -> Pessoa entidade Criada")
 
     usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador=False, ativo=usuario_ativo)
 
