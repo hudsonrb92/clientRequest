@@ -11,7 +11,7 @@ from entidades.pessoa import Pessoa
 from entidades.pessoa_endereco import PessoaEndereco
 from entidades.profissional_saude import ProfissionalSaude
 from entidades.usuario import Usuario
-from fabricas import fabrica_conexao
+from fabricas.fabrica_conexao import FabricaConexao
 from repositories import pessoa_repositorio, laudo_estudo_dicom_repositorio
 from repositories.cidade_repositorio import CidadeRepositorio
 from repositories.endereco_repositorio import EnderecoRepositorio
@@ -28,8 +28,7 @@ def now():
     hoje_data_hora = f"{hoje.day:02}/{hoje.month:02}/{hoje.year} {hoje.hour:02}:{hoje.minute:02}:{hoje.second:02}"
     return (hoje_data_hora)
 
-fabrica = fabrica_conexao.FabricaConexao()
-sessao = fabrica.criar_sessao()
+sessao = FabricaConexao().criar_sessao()
 print(f"{now()} -> Sessão criada ...")
 
 identificador_estabelecimento_saude = 47
@@ -198,6 +197,7 @@ for laudo in laudos:
         except Exception as e:
             print(f'{now()} .............................................................\n{e}\
                 \n.............................................................')
+            sessao.rollback()
 
 
         print(f"{now()} -> Iniciando Processo de criação de Endereco")
@@ -205,16 +205,28 @@ for laudo in laudos:
         cidade = CidadeRepositorio().lista_cidade_por_cod_ibge(sessao=sessao, codigo_ibge=codigo_ibge)
         endereco_entidade.identificador_cidade = cidade.identificador
         endereco_repo = EnderecoRepositorio()
-        endereco_repo.insere_endereco(sessao=sessao, endereco=endereco_entidade)
+        try:
+            endereco_repo.insere_endereco(sessao=sessao, endereco=endereco_entidade)
+            sessao.commit()
+        except Exception as e:
+            print(f'{now()} .............................................................\n{e}\
+                \n.............................................................')
+            sessao.rollback()
 
 
         print(f"{now()} -> Iniciando Processo de criação de Profissional de saude")
         # Criar Profissional de saude
         profissional_saudeEntidade.identificador_pessoa = pessoa_local_nova.identificador
         profi_repo = ProfissionalSaudeRepositorio()
-        profi_repo.inserir_profissional_saude(sessao=sessao,
-                                              profissional_saude=profissional_saudeEntidade)
 
+        try:
+            profi_repo.inserir_profissional_saude(sessao=sessao,
+                                              profissional_saude=profissional_saudeEntidade)
+            sessao.commit()
+        except Exception as e:
+            print(f'{now()} .............................................................\n{e}\
+                \n.............................................................')
+            sessao.rollback()
 
         print(f"{now()} -> Iniciando Processo de criação de Pessoa_endereco")
         # Criar Pessoa_endereco
@@ -223,15 +235,27 @@ for laudo in laudos:
                                                   identificador_endereco=identificador_endereco_novo,
                                                   identificador_tipo_uso_endereco='Comercial', ativa=True)
         pessoa_ende_repo = PessoaEnderecoRepositorio()
-        pessoa_ende_repo.insere_pessoa_endereco(sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
 
+        try:
+            pessoa_ende_repo.insere_pessoa_endereco(sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
+            sessao.commit()
+        except Exception as e:
+            print(f'{now()} .............................................................\n{e}\
+                \n.............................................................')
+            sessao.rollback()
 
         print(f"{now()} -> Iniciando Processo de criação de Usuário")
         # Criar Usuário
         usuarioEntidade.identificador_pessoa = pessoa_local_nova.identificador
         usuario_repo = UsuarioRepositorio()
-        usuario_repo.inserir_usuario(usuario=usuarioEntidade, sessao=sessao)
 
+        try:
+            usuario_repo.inserir_usuario(usuario=usuarioEntidade, sessao=sessao)
+            sessao.commit()
+        except Exception as e:
+            print(f'{now()} .............................................................\n{e}\
+                \n.............................................................')
+            sessao.rollback()
 
         print(f"{now()} -> Iniciando Processo de criação de Perfil Usuário Estabelecimento Saude")
         # Perfil Usuário Estabelecimento Saude
@@ -246,7 +270,13 @@ for laudo in laudos:
         perfil_usuario_estabelecimento_saude_entidade.identificador_usuario = identificador_usuario_novo.identificador
         perfil_usuario_estabelecimento_saude_entidade.data_final = data_inicial = f'{hoje.year}-{hoje.month:02}-{hoje.day:02}'
         pues_repo = PerfilUsuarioEstabelecimentoSaudeRepositorio()
-        pues_repo.insere_pues(sessao=sessao,
-                              perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
 
+        try:
+            pues_repo.insere_pues(sessao=sessao,
+                              perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
+            sessao.commit()
+        except Exception as e:
+            print(f'{now()} .............................................................\n{e}\
+                \n.............................................................')
+            sessao.rollback()
     sessao.commit()
