@@ -4,3 +4,4 @@ __pycache__/*
 cliente/*
 clientapi/*
 config.ini
+*/__pycache__/*

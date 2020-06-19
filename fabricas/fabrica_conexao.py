@@ -16,7 +16,7 @@ class FabricaConexao():
         db = config['DATABASE']['db']
         port = config['DATABASE']['port']
 
-        engine = create_engine(f'postgresql://{user}:{passwd}@{host}:{port}/{db}')
+        engine = create_engine(f'postgresql://{user}:{passwd}@{host}:{port}/{db}', pool_pre_ping=True)
 
         return engine
 
