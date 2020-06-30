@@ -23,20 +23,24 @@ from repositories.pessoa_endereco_repositorio import PessoaEnderecoRepositorio
 from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio
 from repositories.usuario_repositorio import UsuarioRepositorio
 
+
 def now():
     hoje = datetime.now()
     hoje_data_hora = f"{hoje.day:02}/{hoje.month:02}/{hoje.year} {hoje.hour:02}:{hoje.minute:02}:{hoje.second:02}"
     return (hoje_data_hora)
 
+
 sessao = FabricaConexao().criar_sessao()
 print(f"{now()} -> Sessão criada ...")
 
 identificador_estabelecimento_saude = 47
-estabelecimento_local = EstabelecimentoSaudeRepositorio().lista_primeiro_estabelecimento(sessao)
+estabelecimento_local = EstabelecimentoSaudeRepositorio(
+).lista_primeiro_estabelecimento(sessao)
 numero_cnpj = estabelecimento_local.numero_cnpj
 print(f"{now()} --> Número de CNPJ: {numero_cnpj}")
 
-cidade_local = CidadeRepositorio().lista_cidade_por_identificador(sessao,estabelecimento_local.endereco.identificador_cidade)
+cidade_local = CidadeRepositorio().lista_cidade_por_identificador(
+    sessao, estabelecimento_local.endereco.identificador_cidade)
 codigo_ibge = cidade_local.codigo_ibge
 print(f"{now()} -> Codigo IBGE: {codigo_ibge}")
 
@@ -91,7 +95,8 @@ for laudo in laudos:
     studyid = estudo['studyid']
     studyinstanceuid = estudo['studyinstanceuid']
     studytime = estudo['studytime']
-    profissional = requests.get(url=url_profissional % identificador_profissional_saude, headers=head).json()
+    profissional = requests.get(
+        url=url_profissional % identificador_profissional_saude, headers=head).json()
     assinatura_digitalizada = profissional['assinatura_digitalizada']
     ativo = True
     estado_conselho_trabalho = profissional['estado_conselho_trabalho']['sigla']
@@ -101,14 +106,14 @@ for laudo in laudos:
     ativa = True
     pessa_data_nascimento = profissional['pessoa']['data_nascimento']
     identificador_sexo = profissional['pessoa']['identificador_sexo']
-    usuario_req = requests.get(url=url_usuario % identificador_pessoa, headers=head).json()
+    usuario_req = requests.get(url=url_usuario %
+                               identificador_pessoa, headers=head).json()
     login = usuario_req['login']
     login = str(login + registro_conselho_trabalho.split(' ')[0])
     senha = registro_conselho_trabalho.split(' ')[0]
     senha_hasheada = hashlib.md5(senha.encode('utf8')).hexdigest()
     administrador = usuario_req['administrador']
     usuario_ativo = True
-
 
     pessoaEntidade = Pessoa(nome=nome, ativa=ativa)
     pessoaEntidade.identificador_sexo = identificador_sexo
@@ -117,8 +122,8 @@ for laudo in laudos:
 
     print(f"{now()} -> Pessoa entidade Criada")
 
-    usuarioEntidade = Usuario(login=login, senha=senha_hasheada, administrador=False, ativo=usuario_ativo)
-
+    usuarioEntidade = Usuario(
+        login=login, senha=senha_hasheada, administrador=False, ativo=usuario_ativo)
 
     print(f"{now()} -> Usuario entidade Criado")
     laudoEntidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao,
@@ -129,17 +134,18 @@ for laudo in laudos:
     laudoEntidade.numero_exames_relacionados = numero_exames_relacionados
     laudoEntidade.identificador_laudo_elaudos = identificador_laudo_elaudos
 
-
     print(f"{now()} -> Laudo Entidade Criado")
 
-    estado_local = EstadoRepositorio().pega_estado_por_sigla(sessao=sessao, sigla=estado_conselho_trabalho)
+    estado_local = EstadoRepositorio().pega_estado_por_sigla(
+        sessao=sessao, sigla=estado_conselho_trabalho)
 
     identificador_estabelecimento_saude_local = EstabelecimentoSaudeRepositorio().lista_estabelecimento(sessao=sessao,
                                                                                                         numero_cnpj=numero_cnpj)
     identificador_estabelecimento_saude_local = identificador_estabelecimento_saude_local.identificador
 
     # Criar Endereco Entidade
-    endereco_entidade = Endereco(identificador_tipo_endereco='Avenida', logradouro='Gerado Por Integração', ativo=True)
+    endereco_entidade = Endereco(
+        identificador_tipo_endereco='Avenida', logradouro='Gerado Por Integração', ativo=True)
     endereco_entidade.complemento = ''
     endereco_entidade.bairro = 'Centro'
     endereco_entidade.cep = cep
@@ -154,7 +160,8 @@ for laudo in laudos:
     profissional_saudeEntidade.assinatura_digitalizada = assinatura_digitalizada
 
     print(f"{now()} -> profissional_saudeEntidade Criado")
-    pessoa_local = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(pessoaEntidade.nome, sessao)
+    pessoa_local = pessoa_repositorio.PessoaRepositorio(
+    ).pega_pessoa_por_nome(pessoaEntidade.nome, sessao)
 
     if pessoa_local:
 
@@ -173,7 +180,7 @@ for laudo in laudos:
         laudoEntidade.identificador_profissional_saude = profissional_saude_local.identificador
         laudoEntidade.identificador_estudo_dicom = identificador_estudo_local
 
-        if estudo_local.situacao_laudo == 'N' and situacao=='D':
+        if estudo_local.situacao_laudo == 'N' and situacao == 'D':
             print(f"{now()} -> Publicando Exame.")
             laudo_estudo_dicom_repositorio.LaudoEstudoDicomRepositorio().insere_laudo(laudo=laudoEntidade,
                                                                                       sessao=sessao)
@@ -189,7 +196,8 @@ for laudo in laudos:
         print(f"{now()} -> Iniciando Processo de criação de usuario")
         # Criar pessoa
         try:
-            pessoa_repositorio.PessoaRepositorio().cadastra_pessoa(pessoa=pessoaEntidade, sessao=sessao)
+            pessoa_repositorio.PessoaRepositorio().cadastra_pessoa(
+                pessoa=pessoaEntidade, sessao=sessao)
             sessao.commit()
             pessoa_local_nova = pessoa_repositorio.PessoaRepositorio().pega_pessoa_por_nome(nome=pessoaEntidade.nome,
                                                                                             sessao=sessao)
@@ -199,20 +207,20 @@ for laudo in laudos:
                 \n.............................................................')
             sessao.rollback()
 
-
         print(f"{now()} -> Iniciando Processo de criação de Endereco")
         # Criar Endereco
-        cidade = CidadeRepositorio().lista_cidade_por_cod_ibge(sessao=sessao, codigo_ibge=codigo_ibge)
+        cidade = CidadeRepositorio().lista_cidade_por_cod_ibge(
+            sessao=sessao, codigo_ibge=codigo_ibge)
         endereco_entidade.identificador_cidade = cidade.identificador
         endereco_repo = EnderecoRepositorio()
         try:
-            endereco_repo.insere_endereco(sessao=sessao, endereco=endereco_entidade)
+            endereco_repo.insere_endereco(
+                sessao=sessao, endereco=endereco_entidade)
             sessao.commit()
         except Exception as e:
             print(f'{now()} .............................................................\n{e}\
                 \n.............................................................')
             sessao.rollback()
-
 
         print(f"{now()} -> Iniciando Processo de criação de Profissional de saude")
         # Criar Profissional de saude
@@ -221,7 +229,7 @@ for laudo in laudos:
 
         try:
             profi_repo.inserir_profissional_saude(sessao=sessao,
-                                              profissional_saude=profissional_saudeEntidade)
+                                                  profissional_saude=profissional_saudeEntidade)
             sessao.commit()
         except Exception as e:
             print(f'{now()} .............................................................\n{e}\
@@ -230,14 +238,16 @@ for laudo in laudos:
 
         print(f"{now()} -> Iniciando Processo de criação de Pessoa_endereco")
         # Criar Pessoa_endereco
-        identificador_endereco_novo = EnderecoRepositorio().lista_endereco_por_cep(sessao=sessao, cep=cep).identificador
+        identificador_endereco_novo = EnderecoRepositorio(
+        ).lista_endereco_por_cep(sessao=sessao, cep=cep).identificador
         pessoa_endereco_entidade = PessoaEndereco(identificador_pessoa=pessoa_local_nova.identificador,
                                                   identificador_endereco=identificador_endereco_novo,
                                                   identificador_tipo_uso_endereco='Comercial', ativa=True)
         pessoa_ende_repo = PessoaEnderecoRepositorio()
 
         try:
-            pessoa_ende_repo.insere_pessoa_endereco(sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
+            pessoa_ende_repo.insere_pessoa_endereco(
+                sessao=sessao, pessoa_endereco=pessoa_endereco_entidade)
             sessao.commit()
         except Exception as e:
             print(f'{now()} .............................................................\n{e}\
@@ -250,14 +260,16 @@ for laudo in laudos:
         usuario_repo = UsuarioRepositorio()
 
         try:
-            usuario_repo.inserir_usuario(usuario=usuarioEntidade, sessao=sessao)
+            usuario_repo.inserir_usuario(
+                usuario=usuarioEntidade, sessao=sessao)
             sessao.commit()
         except Exception as e:
             print(f'{now()} .............................................................\n{e}\
                 \n.............................................................')
             sessao.rollback()
 
-        print(f"{now()} -> Iniciando Processo de criação de Perfil Usuário Estabelecimento Saude")
+        print(
+            f"{now()} -> Iniciando Processo de criação de Perfil Usuário Estabelecimento Saude")
         # Perfil Usuário Estabelecimento Saude
         perfil_usuario_estabelecimento_saude_entidade = PerfilUsuarioEstabelecimentoSaude(
             identificador_perfil='ROLE_MEDICO_EXECUTOR',
@@ -273,7 +285,7 @@ for laudo in laudos:
 
         try:
             pues_repo.insere_pues(sessao=sessao,
-                              perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
+                                  perfil_usuario_estabelecumento_saude=perfil_usuario_estabelecimento_saude_entidade)
             sessao.commit()
         except Exception as e:
             print(f'{now()} .............................................................\n{e}\
