@@ -8,3 +8,4 @@ class EstabelecimentoSaudeRepositorio():
 
     def lista_primeiro_estabelecimento(self, sessao):
         estabelecimento = EstabelecimentoSaudeQueries().pega_primeiro_estabelecimento(sessao=sessao)
+        return estabelecimento

@@ -7,3 +7,4 @@ class EstabelecimentoSaudeQueries():
 
     def pega_primeiro_estabelecimento(self, sessao):
         estabelecimento = sessao.query(EstabelecimentoSaudeModel).order_by(EstabelecimentoSaudeModel.identificador).first()
+        return estabelecimento
