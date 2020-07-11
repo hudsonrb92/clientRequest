@@ -9,3 +9,7 @@ class ProfissionalSaudeQueries():
 
     def inserir_profissional_saude(self, profissional_saude, sessao):
         sessao.add(profissional_saude)
+
+    def lista_por_registro(self, sessao, registo):
+        profissional = sessao.query(ProfissionalSaudeModel).filter_by(registro_conselho_trabalho=registo).first()
+        return profissional

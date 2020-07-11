@@ -18,3 +18,7 @@ class ProfissionalSaudeRepositorio():
         profissional = ProfissionalSaudeQueries().lista_por_identificador_pessoa(sessao=sessao,
                                                                                  identificador_pessoa=identificador_pessoa)
         return profissional
+
+    def lista_profissional_por_registro(self, sessao, registro):
+        profissional = ProfissionalSaudeQueries().lista_por_registro(sessao,registro)
+        return profissional

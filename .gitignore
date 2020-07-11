@@ -2,6 +2,7 @@
 credentials.py
 __pycache__/*
 cliente/*
-clientapi/*
+.clienteapi/*
 config.ini
 */__pycache__/*
+ClienteApi.code-workspace

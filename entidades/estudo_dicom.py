@@ -1,4 +1,4 @@
-class EstudoDicom():
+class EstudoDicom:
     def __init__(self, studyinstanceuid, studydate, patientname, situacao_laudo,
                  identificador_prioridade_estudo_dicom, numero_exames_ris, situacao, imagens_disponiveis,
                  origem_registro):
@@ -53,7 +53,7 @@ class EstudoDicom():
         self.__studydate = studydate
 
     @patientname.setter
-    def patientname(self,patientname):
+    def patientname(self, patientname):
         self.__patientname = patientname
 
     @situacao_laudo.setter
@@ -65,9 +65,9 @@ class EstudoDicom():
         self.__identificador_prioridade_estudo_dicom = identificador_prioridade_estudo_dicom
 
     @numero_exames_ris.setter
-    def numero_exames_ris(self,numero_exames_ris):
+    def numero_exames_ris(self, numero_exames_ris):
         self.__numero_exames_ris = numero_exames_ris
 
     @origem_registro.setter
-    def origem_registro(self,origem_registro):
+    def origem_registro(self, origem_registro):
         self.__origem_registro = origem_registro
