@@ -16,50 +16,50 @@ from repositories.pessoa_repositorio import PessoaRepositorio as pr
 from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio as psr
 from repositories.usuario_repositorio import UsuarioRepositorio
 
-log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handle = logging.FileHandler('D:/integration.log')
 file_handle.setFormatter(formatter)
-log.addHandler(file_handle)
+logger.addHandler(file_handle)
 
 sessao = FabricaConexao().criar_sessao()
-log.info('Sessão criada ...')
-identificador_estabelecimento_saude = 55
+logger.info('Sessão criada ...')
+identificador_estabelecimento_saude = 53
 estabelecimento_local = EstabelecimentoSaudeRepositorio(
 ).lista_primeiro_estabelecimento(sessao)
-log.info(' %s', estabelecimento_local.nome_fantasia)
+logger.info(' %s', estabelecimento_local.nome_fantasia)
 numero_cnpj = estabelecimento_local.numero_cnpj
-log.info("Número de CNPJ: %s", numero_cnpj)
+logger.info("Número de CNPJ: %s", numero_cnpj)
 
 cidade_local = CidadeRepositorio().lista_cidade_por_identificador(sessao,
                                                                   estabelecimento_local.endereco.identificador_cidade)
 codigo_ibge = cidade_local.codigo_ibge
-log.info(f"Codigo IBGE - {codigo_ibge} Cidade - {cidade_local.nome}")
-
+logger.info(f"Codigo IBGE - {codigo_ibge} Cidade - {cidade_local.nome}")
 cep = estabelecimento_local.endereco.cep
-log.info("Cep: {cep}")
-
+logger.info("Cep: {cep}")
 url_laudo = f'http://sistema.elaudos.com/api/laudos/{identificador_estabelecimento_saude}'
 url_estudo = 'http://sistema.elaudos.com/api/estudo/%s'
 url_profissional = 'http://sistema.elaudos.com/api/profissional/%s'
 url_login = 'http://sistema.elaudos.com/api/login'
 url_usuario = 'http://sistema.elaudos.com/api/usuario/%s'
 url_exames_sem_laudo = f'http://sistema.elaudos.com/api/estudoSemLaudo/{identificador_estabelecimento_saude}'
-
 cred = CREDENTIALS
-
 make_login = requests.post(url=url_login, json=cred)
 token = make_login.json()['access_token']
-
 head = {'Authorization': 'Bearer ' + token}
-
 laudos = requests.get(url=url_laudo, headers=head).json()
-exames_sem_laudo = requests.get(url=url_exames_sem_laudo, headers=head)
-edr.marcar_exames_como_teste(exames_sem_laudo, sessao)
-
-log.info(f"Quantidade de laudos para integrar = {len(laudos)}")
-
+logger.info("Lista de laudos recuperada.")
+# Exames sem laudo na elaudos
+exames_sem_laudo = requests.get(url=url_exames_sem_laudo, headers=head).json()
+logger.info(f"O numero de exames sem laudos na elaudos é de {len(exames_sem_laudo)}.")
+# Pegar exames localmente que não estejam marcados como teste.
+studies = tuple([exame['studyinstanceuid'] for exame in exames_sem_laudo])
+logger.info(f'{studies}')
+# Marca exames localmente como que estejam sem laudo e que tenham situação valida como teste.
+exams_to_set_as_test = edr.set_tuple_as_test(sessao, studies)
+logger.info("Exames marcados como teste.")
+logger.info(f"Quantidade de laudos para integrar = {len(laudos)}")
 
 for laudo in laudos:
     # Pega atributos de Estudo_Dicom
@@ -73,8 +73,7 @@ for laudo in laudos:
     situacao_envio_his = laudo['situacao_envio_his']
     texto = laudo['texto']
     identificador_profissional_saude = laudo['identificador_profissional_saude']
-    estudo = requests.get(url=url_estudo %
-                          identificador_estudo_dicom, headers=head).json()
+    estudo = requests.get(url=url_estudo % identificador_estudo_dicom, headers=head).json()
     accessionnumber = estudo['accessionnumber']
     chave_primaria_origem = estudo['chave_primaria_origem']
     data_hora_inclusao = estudo['data_hora_inclusao']
@@ -105,8 +104,7 @@ for laudo in laudos:
     ativa = True
     pessa_data_nascimento = profissional['pessoa']['data_nascimento']
     identificador_sexo = profissional['pessoa']['identificador_sexo']
-    usuario_req = requests.get(url=url_usuario %
-                               identificador_pessoa, headers=head).json()
+    usuario_req = requests.get(url=url_usuario % identificador_pessoa, headers=head).json()
     login = usuario_req['login']
     login = str(login + registro_conselho_trabalho.split(' ')[0])
     senha = registro_conselho_trabalho.split(' ')[0]
@@ -119,8 +117,10 @@ for laudo in laudos:
     if estudo_local:
         # Verifica se existe pessoa, profissional_saude, usuario localmente
         pessoa_local = pr().pega_pessoa_por_nome(nome, sessao)
+        # Busca profissional_saude localmente
         ps_local = psr().lista_profissional_por_registro(
             sessao, registro_conselho_trabalho)
+        # Busca usuario_local
         usuario_local = UsuarioRepositorio().list_by_login(sessao, login)
 
         # Criamos aqui a entidade do laudo para não ter que criar novamente no else
@@ -129,13 +129,14 @@ for laudo in laudos:
                                           situacao=situacao, situacao_envio_his=situacao_envio_his,
                                           texto=texto,
                                           identificador_profissional_saude=identificador_profissional_saude)
+
         laudo_entidade.numero_exames_relacionados = numero_exames_relacionados
         laudo_entidade.identificador_laudo_elaudos = identificador_laudo_elaudos
-        log.info(
+        logger.info(
             f"Laudo Entidade Criado emitido as:{laudo_entidade.data_hora_emissao}")
         estado_local = EstadoRepositorio().pega_estado_por_sigla(
             sessao=sessao, sigla=estado_conselho_trabalho)
-        log.info(
+        logger.info(
             f"Estado banco de dados local - {estado_local.nome}-{estado_local.sigla}")
         identificador_estabelecimento_saude_local = estabelecimento_local.identificador
 
@@ -148,28 +149,29 @@ for laudo in laudos:
                                      perfil='ROLE_MEDICO_EXECUTOR',
                                      assinatura=assinatura_digitalizada, login=login,
                                      identificador_estabelecimento_saude=identificador_estabelecimento_saude_local)
-                log.info(f'Profissional de saude cadastrado.')
+                logger.info(f'Profissional de saude cadastrado.')
                 laudo_entidade.identificador_profissional_saude = ps_novo.identificador
-                log.info(
+                logger.info(
                     f'Identificador Profissional = {ps_novo.identificador}')
             except Exception as e:
-                log.info(f'Erro ao cadastrar médico {e}')
+                logger.info(f'Erro ao cadastrar médico {e}')
                 raise Exception('Um erro ao cadastrar paciente')
             if estudo_local.situacao_laudo == 'N' and situacao == 'D':
                 try:
                     ledr().insere_laudo(laudo=laudo_entidade, sessao=sessao)
+                    estudo_local.situacao = 'V'
                     sessao.commit()
-                    log.info(f'Laudo inserido. Study -> {studyinstanceuid}')
-                    log.info(f'Paciente -> {patientname} - {patientid}')
+                    logger.info(f'Laudo inserido. Study -> {studyinstanceuid}')
+                    logger.info(f'Paciente -> {patientname} - {patientid}')
                     url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                    integra = requests.put(url=url_to_put, headers=head)
+                    # integra = requests.put(url=url_to_put, headers=head)
                 except Exception as e:
                     sessao.rollback()
-                    log.info(f'Ocorreu um erro ao inserir o laudo {e}')
+                    logger.info(f'Ocorreu um erro ao inserir o laudo {e}')
                     raise Exception
 
         else:
-            log.info(
+            logger.info(
                 f'Profissional de Saúde encontrado sem necessidade de nova criação')
             # Cria Laudo entidade
 
@@ -183,7 +185,7 @@ for laudo in laudos:
                 laudo_entidade.identificador_profissional_saude = usuario_local.pessoa.profissional_saude[
                     0].identificador
             else:
-                log.info(f'Inconcistência no profissional de saude')
+                logger.info(f'Inconcistência no profissional de saude')
                 # Caso estudo local ainda esteja sem laudo e situação do laudo na
                 # Elaudos esteja como definitivo podemos publicar o laudo
             if estudo_local.situacao_laudo == 'N' and situacao == 'D':
@@ -191,10 +193,10 @@ for laudo in laudos:
                     ledr().insere_laudo(laudo=laudo_entidade, sessao=sessao)
                     sessao.commit()
                     url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                    integra = requests.put(url=url_to_put, headers=head)
+                    # integra = requests.put(url=url_to_put, headers=head)
                 except Exception as e:
-                    log.info(f"Erro ao inserir laudo no exame : {e}")
+                    logger.info(f"Erro ao inserir laudo no exame : {e}")
     else:
-        log.info('Estudo não encontrado localmente.')
-        log.info(
+        logger.info('Estudo não encontrado localmente.')
+        logger.info(
             f'{studyinstanceuid} - {identificador_laudo_elaudos} - {identificador_estudo_dicom}')
