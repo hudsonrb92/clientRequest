@@ -19,7 +19,7 @@ from repositories.usuario_repositorio import UsuarioRepositorio
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handle = logging.FileHandler('D:/integration.log')
+file_handle = logging.FileHandler('/var/log/integration/integration.log')
 file_handle.setFormatter(formatter)
 logger.addHandler(file_handle)
 
@@ -52,13 +52,16 @@ laudos = requests.get(url=url_laudo, headers=head).json()
 logger.info("Lista de laudos recuperada.")
 # Exames sem laudo na elaudos
 exames_sem_laudo = requests.get(url=url_exames_sem_laudo, headers=head).json()
-logger.info(f"O numero de exames sem laudos na elaudos é de {len(exames_sem_laudo)}.")
+logger.info(
+    f"O numero de exames sem laudos na elaudos é de {len(exames_sem_laudo)}.")
 # Pegar exames localmente que não estejam marcados como teste.
-studies = tuple([exame['studyinstanceuid'] for exame in exames_sem_laudo])
-logger.info(f'{studies}')
-# Marca exames localmente como que estejam sem laudo e que tenham situação valida como teste.
-exams_to_set_as_test = edr.set_tuple_as_test(sessao, studies)
-logger.info("Exames marcados como teste.")
+if exames_sem_laudo is list:
+    studies = [exame['studyinstanceuid'] for exame in exames_sem_laudo]
+    studies = tuple(studies)
+    logger.info(f'{studies}')
+    # Marca exames localmente como que estejam sem laudo e que tenham situação valida como teste.
+    exams_to_set_as_test = edr.set_tuple_as_test(sessao, studies)
+    logger.info("Exames marcados como teste.")
 logger.info(f"Quantidade de laudos para integrar = {len(laudos)}")
 
 for laudo in laudos:
@@ -73,7 +76,8 @@ for laudo in laudos:
     situacao_envio_his = laudo['situacao_envio_his']
     texto = laudo['texto']
     identificador_profissional_saude = laudo['identificador_profissional_saude']
-    estudo = requests.get(url=url_estudo % identificador_estudo_dicom, headers=head).json()
+    estudo = requests.get(url=url_estudo %
+                          identificador_estudo_dicom, headers=head).json()
     accessionnumber = estudo['accessionnumber']
     chave_primaria_origem = estudo['chave_primaria_origem']
     data_hora_inclusao = estudo['data_hora_inclusao']
@@ -104,7 +108,8 @@ for laudo in laudos:
     ativa = True
     pessa_data_nascimento = profissional['pessoa']['data_nascimento']
     identificador_sexo = profissional['pessoa']['identificador_sexo']
-    usuario_req = requests.get(url=url_usuario % identificador_pessoa, headers=head).json()
+    usuario_req = requests.get(url=url_usuario %
+                               identificador_pessoa, headers=head).json()
     login = usuario_req['login']
     login = str(login + registro_conselho_trabalho.split(' ')[0])
     senha = registro_conselho_trabalho.split(' ')[0]
@@ -164,7 +169,7 @@ for laudo in laudos:
                     logger.info(f'Laudo inserido. Study -> {studyinstanceuid}')
                     logger.info(f'Paciente -> {patientname} - {patientid}')
                     url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                    # integra = requests.put(url=url_to_put, headers=head)
+                    integra = requests.put(url=url_to_put, headers=head)
                 except Exception as e:
                     sessao.rollback()
                     logger.info(f'Ocorreu um erro ao inserir o laudo {e}')
@@ -191,9 +196,10 @@ for laudo in laudos:
             if estudo_local.situacao_laudo == 'N' and situacao == 'D':
                 try:
                     ledr().insere_laudo(laudo=laudo_entidade, sessao=sessao)
+                    estudo_local.situacao = 'V'
                     sessao.commit()
                     url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                    # integra = requests.put(url=url_to_put, headers=head)
+                    integra = requests.put(url=url_to_put, headers=head)
                 except Exception as e:
                     logger.info(f"Erro ao inserir laudo no exame : {e}")
     else:

@@ -17,13 +17,13 @@ class EstudoDicomQuery:
 
     @staticmethod
     def busca_estudo_por_study(sessao, studyinstanceuid):
-        estudo = sessao.query(EstudoDicomModel).filter(studyinstanceuid=studyinstanceuid).first()
+        estudo = sessao.query(EstudoDicomModel).filter(EstudoDicomModel.studyinstanceuid == studyinstanceuid).first()
         return estudo
 
     @staticmethod
     def set_tuple_of_exames_as_test(sessao: 'SqlAlchemy session',
                                     tuple_of_studies: 'Tuple of studyinstaceuid') -> 'Return a list of sqlAlchemy objects':
-        exames = sessao.query(EstudoDicomModel.identificador, EstudoDicomModel.patientname)\
+        exames = sessao.query(EstudoDicomModel.identificador, EstudoDicomModel.patientname) \
             .filter(EstudoDicomModel.studyinstanceuid.in_(tuple_of_studies)) \
             .filter(EstudoDicomModel.situacao == 'V').filter(EstudoDicomModel.situacao_laudo == 'N').all()
         app.logger.log(f'{exames}')

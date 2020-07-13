@@ -110,8 +110,8 @@ class EstadoModel(Base):
                                             foreign_keys='ProfissionalSaudeModel.identificador_estado_conselho_trabalho',
                                             backref='estado_conselho_trabalho', lazy='dynamic')
     cidade = relationship("CidadeModel",
-                                            foreign_keys='CidadeModel.identificador_estado',
-                                            backref='cidade', lazy='dynamic')
+                          foreign_keys='CidadeModel.identificador_estado',
+                          backref='cidade', lazy='dynamic')
 
 
 class EstudoDicomModel(Base):
@@ -234,6 +234,7 @@ class LaudoEstudoDicomModel(Base):
     numero_exames_relacionados = Column(Integer, nullable=True)
     situacao_envio_his = Column(String, nullable=False)
 
+
 class ProfissionalSaudeModel(Base):
     __table_args__ = {'schema': 'public'}
     __tablename__ = 'profissional_saude'
@@ -297,6 +298,7 @@ class PessoaEnderecoModel(Base):
     identificador_endereco = Column(Integer, nullable=False)
     identificador_tipo_uso_endereco = Column(String, nullable=False)
     ativa = Column(Boolean, nullable=False)
+
 
 class CidadeModel(Base):
     __table_args__ = {'schema': 'public'}

@@ -6,3 +6,7 @@ cliente/*
 config.ini
 */__pycache__/*
 ClienteApi.code-workspace
+.idea/ClienteApi.iml
+.idea/misc.xml
+.idea/workspace.xml
+.idea/inspectionProfiles/profiles_settings.xml
