@@ -1,5 +1,6 @@
 class ProfissionalSaude():
-    def __init__(self, identificador_pessoa,identificador_tipo_conselho_trabalho,identificador_estado_conselho_trabalho,registro_conselho_trabalho,ativo):
+    def __init__(self, identificador_pessoa, identificador_tipo_conselho_trabalho,
+                 identificador_estado_conselho_trabalho, registro_conselho_trabalho, ativo):
         self.__identificador_pessoa = identificador_pessoa
         self.__identificador_tipo_conselho_trabalho = identificador_tipo_conselho_trabalho
         self.__identificador_estado_conselho_trabalho = identificador_estado_conselho_trabalho
@@ -27,7 +28,7 @@ class ProfissionalSaude():
         return self.__ativo
 
     @identificador_pessoa.setter
-    def identificador_pessoa(self,identificador_pessoa):
+    def identificador_pessoa(self, identificador_pessoa):
         self.__identificador_pessoa = identificador_pessoa
 
     @identificador_tipo_conselho_trabalho.setter

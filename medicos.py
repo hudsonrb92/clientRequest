@@ -1,8 +1,7 @@
 import hashlib
 
-from app import logger
 from dominios.db import ProfissionalSaudeModel, EstadoModel, PessoaModel, UsuarioModel, \
-    PerfilUsuarioEstabelecimentoSaudeModel
+    PerfilUsuarioEstabelecimentoSaudeModel, logger
 
 
 class Medicos:
@@ -26,7 +25,8 @@ class Medicos:
         if login is None:
             login = f'{uf.lower()}{crm}'
         # Verifica se a identificador de estabelecimentos de saúde local
-        logger.info('Verificando se em kwargs existe o estabelecimento_saude')
+        logger.info(
+            'Verificando se em kwargs existe o estabelecimento_saude')
         identificador_estabelecimento_saude = kwargs.get(
             'identificador_estabelecimento_saude', None)
         # Caso não haja pegar pro padrão 1 isso pode atribuir erros
@@ -91,7 +91,8 @@ class Medicos:
             try:
                 # persiste-se há informações no banco de dados
                 sessao.add(ps_novo)
-                logger.info('Profissinal de saude model inserido no banco.')
+                logger.info(
+                    'Profissinal de saude model inserido no banco.')
                 sessao.commit()
                 logger.info('Profissinal de saude commitado no banco.')
             except Exception as expc:
@@ -99,7 +100,8 @@ class Medicos:
                 logger.info('Erro: %s', expc)
                 logger.info('Fazendo rollback')
                 sessao.rollback()
-                logger.info('Deletando pessoal relacionada criada %s', nome)
+                logger.info(
+                    'Deletando pessoal relacionada criada %s', nome)
                 sessao.delete(p_novo)
                 sessao.commit()
                 logger.info('Pessoa nova deletada.')

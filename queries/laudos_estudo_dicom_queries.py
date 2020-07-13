@@ -1,3 +1,4 @@
 class LaudoEstudoDicomQuery():
-    def insere_laudo(self, sessao, laudo):
+    @staticmethod
+    def insere_laudo(sessao, laudo):
         sessao.add(laudo)

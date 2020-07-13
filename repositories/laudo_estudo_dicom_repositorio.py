@@ -3,7 +3,8 @@ from queries.laudos_estudo_dicom_queries import LaudoEstudoDicomQuery
 
 
 class LaudoEstudoDicomRepositorio:
-    def insere_laudo(self, laudo, sessao):
+    @staticmethod
+    def insere_laudo(laudo, sessao):
         laudoModel = LaudoEstudoDicomModel(data_hora_emissao=laudo.data_hora_emissao,
                                            identificador_estudo_dicom=laudo.identificador_estudo_dicom,
                                            numero_exames_relacionados=laudo.numero_exames_relacionados,

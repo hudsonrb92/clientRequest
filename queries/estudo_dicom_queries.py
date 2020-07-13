@@ -1,7 +1,6 @@
 from sqlalchemy import func
 
-import app
-from dominios.db import EstudoDicomModel
+from dominios.db import EstudoDicomModel, logger
 
 
 class EstudoDicomQuery:
@@ -22,11 +21,12 @@ class EstudoDicomQuery:
 
     @staticmethod
     def set_tuple_of_exames_as_test(sessao: 'SqlAlchemy session',
-                                    tuple_of_studies: 'Tuple of studyinstaceuid') -> 'Return a list of sqlAlchemy objects':
+                                    tuple_of_studies: 'Tuple of studyinstaceuid') \
+            -> 'Return a list of sqlAlchemy objects':
         exames = sessao.query(EstudoDicomModel.identificador, EstudoDicomModel.patientname) \
             .filter(EstudoDicomModel.studyinstanceuid.in_(tuple_of_studies)) \
             .filter(EstudoDicomModel.situacao == 'V').filter(EstudoDicomModel.situacao_laudo == 'N').all()
-        app.logger.log(f'{exames}')
+        logger.log(f'{exames}')
         sessao.query(EstudoDicomModel).filter(EstudoDicomModel.studyinstanceuid.in_(tuple_of_studies)) \
             .filter(EstudoDicomModel.situacao == 'V').filter(EstudoDicomModel.situacao_laudo == 'N').update(
             {"situacao": "T"}, synchronize_session=False)
@@ -46,13 +46,13 @@ class EstudoDicomQuery:
     @staticmethod
     def set_as_test(sessao, studyinstanceuid):
         """Sqlalchemy db manager set study as test."""
-        app.logger.info('Entrada no metodos de marcar como teste.')
+        logger.info('Entrada no metodos de marcar como teste.')
         estudo = sessao.query(EstudoDicomModel).filter_by(studyinstanceuid=studyinstanceuid).first()
-        app.logger.info('Exame buscado.')
+        logger.info('Exame buscado.')
         if estudo is None:
             raise Exception
-        app.logger.info(f'Exame de identificador local nº:{estudo.identificador}, situacao: {estudo.situacao}')
+        logger.info(f'Exame de identificador local nº:{estudo.identificador}, situacao: {estudo.situacao}')
         estudo.situacao = 'T'
-        app.logger.info(f"Situação exame {estudo.situacao}")
+        logger.info(f"Situação exame {estudo.situacao}")
 
         sessao.commit()

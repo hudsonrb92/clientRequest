@@ -1,8 +1,17 @@
+import logging
+
 from sqlalchemy import Column, String, DateTime, Integer, Boolean, ForeignKey, LargeBinary, Text, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 
 from fabricas import fabrica_conexao
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handle = logging.FileHandler('/var/log/integration/integration.log')
+file_handle.setFormatter(formatter)
+logger.addHandler(file_handle)
 
 fabrica = fabrica_conexao.FabricaConexao()
 engine = fabrica.conectar()
@@ -74,7 +83,8 @@ class EnderecoModel(Base):
     complemento = Column(Text, nullable=True)
     bairro = Column(String, nullable=True)
     cep = Column(Integer, nullable=False)
-    identificador_cidade = Column(Integer, ForeignKey('public.cidade.identificador'))
+    identificador_cidade = Column(
+        Integer, ForeignKey('public.cidade.identificador'))
     ativo = Column(Boolean, nullable=False)
 
 
@@ -114,51 +124,52 @@ class EstadoModel(Base):
                           backref='cidade', lazy='dynamic')
 
 
+class ConvenioModel(Base):
+    __table_args__ = {'schema': 'radius_taas'}
+    __tablename__ = 'convenio'
+
+    identificador = Column(Integer, primary_key=True)
+    identificador_estabelecimento_saude = Column(Integer, ForeignKey('public.estabelecimento_saude.identificador'),
+                                                 nullable=False)
+    identificador_usuario = Column(Integer, ForeignKey('public.usuario.identificador'), nullable=True)
+    nome_fantasia = Column(String, nullable=False)
+    numero_cnpj = Column(String, nullable=True)
+    numero_registro_ans = Column(Integer, nullable=False)
+    razao_social = Column(String, nullable=True)
+    estudo_dicom = relationship("EstudoDicomModel")
+
+
 class EstudoDicomModel(Base):
     __table_args__ = {'schema': 'radius_taas'}
     __tablename__ = 'estudo_dicom'
 
     identificador = Column(Integer, primary_key=True)
-
-    identificador_estabelecimento_saude = Column(Integer,
-                                                 ForeignKey(
-                                                     'public.estabelecimento_saude.identificador'),
+    identificador_estabelecimento_saude = Column(Integer, ForeignKey('public.estabelecimento_saude.identificador'),
                                                  nullable=False)
-    estabelecimento_saude = relationship(EstabelecimentoSaudeModel,
-                                         backref=backref('estudo_dicom', lazy='dynamic'))
-    laudo_estudo_dicom = relationship(
-        "LaudoEstudoDicomModel", back_populates="estudo_dicom")
-    anotacao_estudo_dicom = relationship(
-        AnotacaoEstudoDicomModel, back_populates="estudo_dicom")
-    anexo_estudo_dicom = relationship(
-        AnexoEstudoDicomModel, back_populates="estudo_dicom")
-
-    identificador_convenio = Column(Integer(), ForeignKey(
-        'convenio.identificador'), nullable=True)
-
-    identificador_prioridade_estudo_dicom = Column(Integer(),
-                                                   ForeignKey(
-                                                       'prioridade_estudo_dicom.identificador'),
+    estabelecimento_saude = relationship(EstabelecimentoSaudeModel, backref=backref('estudo_dicom', lazy='dynamic'))
+    laudo_estudo_dicom = relationship("LaudoEstudoDicomModel", back_populates="estudo_dicom")
+    anotacao_estudo_dicom = relationship(AnotacaoEstudoDicomModel, back_populates="estudo_dicom")
+    anexo_estudo_dicom = relationship(AnexoEstudoDicomModel, back_populates="estudo_dicom")
+    convenio = relationship(ConvenioModel)
+    identificador_convenio = Column(Integer, ForeignKey('radius_taas.convenio.identificador'), nullable=True)
+    prioridade_estudo_dicom = relationship("PrioridadeEstudoDicomModel")
+    identificador_prioridade_estudo_dicom = Column(Integer,
+                                                   ForeignKey('radius_taas.prioridade_estudo_dicom.identificador'),
                                                    nullable=False)
 
-    identificador_profissional_saude_direcionado = Column(Integer(),
-                                                          ForeignKey(
-                                                              'public.profissional_saude.identificador'),
+    identificador_profissional_saude_direcionado = Column(Integer,
+                                                          ForeignKey('public.profissional_saude.identificador'),
                                                           nullable=True)
 
-    identificador_profissional_saude_operador = Column(Integer(),
-                                                       ForeignKey(
-                                                           'public.profissional_saude.identificador'),
+    identificador_profissional_saude_operador = Column(Integer, ForeignKey('public.profissional_saude.identificador'),
                                                        nullable=True)
 
-    identificador_profissional_saude_solicitante = Column(Integer(),
-                                                          ForeignKey(
-                                                              'public.profissional_saude.identificador'),
+    identificador_profissional_saude_solicitante = Column(Integer,
+                                                          ForeignKey('public.profissional_saude.identificador'),
                                                           nullable=True)
 
-    identificador_profissional_saude_validacao = Column(Integer(),
-                                                        ForeignKey(
-                                                            'public.profissional_saude.identificador'),
+    identificador_profissional_saude_validacao = Column(Integer,
+                                                        ForeignKey('public.profissional_saude.identificador'),
                                                         nullable=True)
 
     chave_primaria_origem = Column(Integer, nullable=True)
@@ -310,3 +321,13 @@ class CidadeModel(Base):
     identificador_estado = Column(Integer, ForeignKey(
         'public.estado.identificador'), nullable=False)
     ativa = Column(Boolean, nullable=False)
+
+
+class PrioridadeEstudoDicomModel(Base):
+    __table_args__ = {'schema': 'radius_taas'}
+    __tablename__ = "prioridade_estudo_dicom"
+
+    identificador = Column(Integer, primary_key=True)
+    descricao = Column(String, nullable=False)
+    ordenacao = Column(Integer, nullable=False)
+    estudo_dicom = relationship(EstudoDicomModel)

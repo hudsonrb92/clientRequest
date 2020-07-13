@@ -1,10 +1,10 @@
 import hashlib
-import logging
 
 import requests
 
 import medicos
 from credentials import CREDENTIALS
+from dominios.db import logger
 from entidades.laudo_estudo_dicom import LaudoEstudoDicom
 from fabricas.fabrica_conexao import FabricaConexao
 from repositories.cidade_repositorio import CidadeRepositorio
@@ -16,28 +16,20 @@ from repositories.pessoa_repositorio import PessoaRepositorio as pr
 from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio as psr
 from repositories.usuario_repositorio import UsuarioRepositorio
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handle = logging.FileHandler('/var/log/integration/integration.log')
-file_handle.setFormatter(formatter)
-logger.addHandler(file_handle)
-
 sessao = FabricaConexao().criar_sessao()
 logger.info('Sessão criada ...')
 identificador_estabelecimento_saude = 53
-estabelecimento_local = EstabelecimentoSaudeRepositorio(
-).lista_primeiro_estabelecimento(sessao)
+estabelecimento_local = EstabelecimentoSaudeRepositorio.lista_primeiro_estabelecimento(sessao)
 logger.info(' %s', estabelecimento_local.nome_fantasia)
 numero_cnpj = estabelecimento_local.numero_cnpj
 logger.info("Número de CNPJ: %s", numero_cnpj)
 
-cidade_local = CidadeRepositorio().lista_cidade_por_identificador(sessao,
-                                                                  estabelecimento_local.endereco.identificador_cidade)
+cidade_local = CidadeRepositorio.lista_cidade_por_identificador(sessao,
+                                                                estabelecimento_local.endereco.identificador_cidade)
 codigo_ibge = cidade_local.codigo_ibge
 logger.info(f"Codigo IBGE - {codigo_ibge} Cidade - {cidade_local.nome}")
 cep = estabelecimento_local.endereco.cep
-logger.info("Cep: {cep}")
+logger.info(f"Cep: {cep}")
 url_laudo = f'http://sistema.elaudos.com/api/laudos/{identificador_estabelecimento_saude}'
 url_estudo = 'http://sistema.elaudos.com/api/estudo/%s'
 url_profissional = 'http://sistema.elaudos.com/api/profissional/%s'
@@ -76,8 +68,7 @@ for laudo in laudos:
     situacao_envio_his = laudo['situacao_envio_his']
     texto = laudo['texto']
     identificador_profissional_saude = laudo['identificador_profissional_saude']
-    estudo = requests.get(url=url_estudo %
-                          identificador_estudo_dicom, headers=head).json()
+    estudo = requests.get(url=url_estudo % identificador_estudo_dicom, headers=head).json()
     accessionnumber = estudo['accessionnumber']
     chave_primaria_origem = estudo['chave_primaria_origem']
     data_hora_inclusao = estudo['data_hora_inclusao']
@@ -108,8 +99,7 @@ for laudo in laudos:
     ativa = True
     pessa_data_nascimento = profissional['pessoa']['data_nascimento']
     identificador_sexo = profissional['pessoa']['identificador_sexo']
-    usuario_req = requests.get(url=url_usuario %
-                               identificador_pessoa, headers=head).json()
+    usuario_req = requests.get(url=url_usuario % identificador_pessoa, headers=head).json()
     login = usuario_req['login']
     login = str(login + registro_conselho_trabalho.split(' ')[0])
     senha = registro_conselho_trabalho.split(' ')[0]
@@ -198,8 +188,9 @@ for laudo in laudos:
                     ledr().insere_laudo(laudo=laudo_entidade, sessao=sessao)
                     estudo_local.situacao = 'V'
                     sessao.commit()
+                    logger.info(f'Laudo id: {laudo_entidade.identificador_laudo_elaudos}, inserido no estudo_local: {estudo_local.identificador}')
                     url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                    integra = requests.put(url=url_to_put, headers=head)
+                    #integra = requests.put(url=url_to_put, headers=head)
                 except Exception as e:
                     logger.info(f"Erro ao inserir laudo no exame : {e}")
     else:

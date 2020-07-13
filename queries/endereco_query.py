@@ -1,10 +1,12 @@
 from dominios.db import EnderecoModel
 
 
-class EnderecoQuery():
-    def insereEndereco(self, sessao, endereco):
+class EnderecoQuery:
+    @staticmethod
+    def insereEndereco(sessao, endereco):
         sessao.add(endereco)
 
-    def lista_endereco_por_cep(self, sessao, cep):
+    @staticmethod
+    def lista_endereco_por_cep(sessao, cep):
         endereco = sessao.query(EnderecoModel).filter_by(cep=cep).first()
         return endereco
