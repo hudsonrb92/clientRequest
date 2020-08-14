@@ -10,10 +10,10 @@ from fabricas.fabrica_conexao import FabricaConexao
 from repositories.cidade_repositorio import CidadeRepositorio
 from repositories.estabelecimento_saude_repositorios import EstabelecimentoSaudeRepositorio
 from repositories.estado_repositorio import EstadoRepositorio
-from repositories.estudo_dicom_repositorio import EstudoDicomRepositorio as edr
-from repositories.laudo_estudo_dicom_repositorio import LaudoEstudoDicomRepositorio as ledr
-from repositories.pessoa_repositorio import PessoaRepositorio as pr
-from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio as psr
+from repositories.estudo_dicom_repositorio import EstudoDicomRepositorio as esDR
+from repositories.laudo_estudo_dicom_repositorio import LaudoEstudoDicomRepositorio as lesDR
+from repositories.pessoa_repositorio import PessoaRepositorio as pR
+from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio as pSR
 from repositories.usuario_repositorio import UsuarioRepositorio
 
 sessao = FabricaConexao().criar_sessao()
@@ -43,16 +43,19 @@ head = {'Authorization': 'Bearer ' + token}
 laudos = requests.get(url=url_laudo, headers=head).json()
 logger.info("Lista de laudos recuperada.")
 # Exames sem laudo na elaudos
-exames_sem_laudo = requests.get(url=url_exames_sem_laudo, headers=head).json()
-logger.info(
-    f"O numero de exames sem laudos na elaudos é de {len(exames_sem_laudo)}.")
+try:
+    exames_sem_laudo = requests.get(url=url_exames_sem_laudo, headers=head).json()
+    logger.info(f"O numero de exames sem laudos na elaudos é de {len(exames_sem_laudo)}.")
+except Exception as e:
+    logger.info(e)
+    raise Exception(f'Um erro ao recuperar exames na elaudos ocorreu.\n{e}')
 # Pegar exames localmente que não estejam marcados como teste.
 if exames_sem_laudo is list:
     studies = [exame['studyinstanceuid'] for exame in exames_sem_laudo]
     studies = tuple(studies)
     logger.info(f'{studies}')
     # Marca exames localmente como que estejam sem laudo e que tenham situação valida como teste.
-    exams_to_set_as_test = edr.set_tuple_as_test(sessao, studies)
+    exams_to_set_as_test = esDR.set_tuple_as_test(sessao, studies)
     logger.info("Exames marcados como teste.")
 logger.info(f"Quantidade de laudos para integrar = {len(laudos)}")
 
@@ -88,8 +91,7 @@ for laudo in laudos:
     studyid = estudo['studyid']
     studyinstanceuid = estudo['studyinstanceuid']
     studytime = estudo['studytime']
-    profissional = requests.get(
-        url=url_profissional % identificador_profissional_saude, headers=head).json()
+    profissional = requests.get(url=url_profissional % identificador_profissional_saude, headers=head).json()
     assinatura_digitalizada = profissional['assinatura_digitalizada']
     ativo = True
     estado_conselho_trabalho = profissional['estado_conselho_trabalho']['sigla']
@@ -107,13 +109,13 @@ for laudo in laudos:
     usuario_ativo = True
 
     # Primeiro devemos buscar o exame localmente
-    estudo_local = edr().listar_por_studyinstanceuid(sessao, studyinstanceuid)
+    estudo_local = esDR().listar_por_studyinstanceuid(sessao, studyinstanceuid)
     # Caso o estudo exista fazemos as verificações
     if estudo_local:
         # Verifica se existe pessoa, profissional_saude, usuario localmente
-        pessoa_local = pr().pega_pessoa_por_nome(nome, sessao)
+        pessoa_local = pR().pega_pessoa_por_nome(nome, sessao)
         # Busca profissional_saude localmente
-        ps_local = psr().lista_profissional_por_registro(
+        ps_local = pSR().lista_profissional_por_registro(
             sessao, registro_conselho_trabalho)
         # Busca usuario_local
         usuario_local = UsuarioRepositorio().list_by_login(sessao, login)
@@ -153,7 +155,7 @@ for laudo in laudos:
                 raise Exception('Um erro ao cadastrar paciente')
             if estudo_local.situacao_laudo == 'N' and situacao == 'D':
                 try:
-                    ledr().insere_laudo(laudo=laudo_entidade, sessao=sessao)
+                    lesDR().insere_laudo(laudo=laudo_entidade, sessao=sessao)
                     estudo_local.situacao = 'V'
                     sessao.commit()
                     logger.info(f'Laudo inserido. Study -> {studyinstanceuid}')
@@ -185,15 +187,19 @@ for laudo in laudos:
                 # Elaudos esteja como definitivo podemos publicar o laudo
             if estudo_local.situacao_laudo == 'N' and situacao == 'D':
                 try:
-                    ledr().insere_laudo(laudo=laudo_entidade, sessao=sessao)
+                    lesDR().insere_laudo(laudo=laudo_entidade, sessao=sessao)
                     estudo_local.situacao = 'V'
                     sessao.commit()
-                    logger.info(f'Laudo id: {laudo_entidade.identificador_laudo_elaudos}, inserido no estudo_local: {estudo_local.identificador}')
+                    logger.info(
+                        f"Laudo id: {laudo_entidade.identificador_laudo_elaudos},"
+                        f"inserido no estudo_local: {estudo_local.identificador}")
                     url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                    #integra = requests.put(url=url_to_put, headers=head)
+                    # integra = requests.put(url=url_to_put, headers=head)
                 except Exception as e:
                     logger.info(f"Erro ao inserir laudo no exame : {e}")
     else:
         logger.info('Estudo não encontrado localmente.')
         logger.info(
             f'{studyinstanceuid} - {identificador_laudo_elaudos} - {identificador_estudo_dicom}')
+
+sessao.close()
