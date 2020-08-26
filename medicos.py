@@ -1,6 +1,6 @@
 import hashlib
 
-from dominios.db import ProfissionalSaudeModel, EstadoModel, PessoaModel, UsuarioModel, \
+from ClienteApi.dominios.db import ProfissionalSaudeModel, EstadoModel, PessoaModel, UsuarioModel, \
     PerfilUsuarioEstabelecimentoSaudeModel, logger
 
 

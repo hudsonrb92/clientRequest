@@ -1,35 +1,27 @@
 import hashlib
 
+import ClienteApi.medicos as medicos
 import requests
 
-import medicos
 from credentials import CREDENTIALS
-from dominios.db import logger
-from entidades.laudo_estudo_dicom import LaudoEstudoDicom
-from fabricas.fabrica_conexao import FabricaConexao
-from repositories.cidade_repositorio import CidadeRepositorio
-from repositories.estabelecimento_saude_repositorios import EstabelecimentoSaudeRepositorio
-from repositories.estado_repositorio import EstadoRepositorio
-from repositories.estudo_dicom_repositorio import EstudoDicomRepositorio as edr
-from repositories.laudo_estudo_dicom_repositorio import LaudoEstudoDicomRepositorio as ledr
-from repositories.pessoa_repositorio import PessoaRepositorio as pr
-from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio as psr
-from repositories.usuario_repositorio import UsuarioRepositorio
+from ClienteApi.dominios.db import logger
+from ClienteApi.entidades.laudo_estudo_dicom import LaudoEstudoDicom
+from ClienteApi.fabricas.fabrica_conexao import FabricaConexao
+from ClienteApi.repositories.estabelecimento_saude_repositorios import EstabelecimentoSaudeRepositorio
+from ClienteApi.repositories.estado_repositorio import EstadoRepositorio
+from ClienteApi.repositories.estudo_dicom_repositorio import EstudoDicomRepositorio as edr
+from ClienteApi.repositories.laudo_estudo_dicom_repositorio import LaudoEstudoDicomRepositorio as ledr
+from ClienteApi.repositories.pessoa_repositorio import PessoaRepositorio as pr
+from ClienteApi.repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio as psr
+from ClienteApi.repositories.usuario_repositorio import UsuarioRepositorio
 
 sessao = FabricaConexao().criar_sessao()
 logger.info('Sessão criada ...')
 identificador_estabelecimento_saude = 53
-estabelecimento_local = EstabelecimentoSaudeRepositorio.lista_primeiro_estabelecimento(sessao)
+estabelecimento_local = EstabelecimentoSaudeRepositorio.lista_primeiro_estabelecimento(
+    sessao)
 logger.info(' %s', estabelecimento_local.nome_fantasia)
-numero_cnpj = estabelecimento_local.numero_cnpj
-logger.info("Número de CNPJ: %s", numero_cnpj)
 
-cidade_local = CidadeRepositorio.lista_cidade_por_identificador(sessao,
-                                                                estabelecimento_local.endereco.identificador_cidade)
-codigo_ibge = cidade_local.codigo_ibge
-logger.info(f"Codigo IBGE - {codigo_ibge} Cidade - {cidade_local.nome}")
-cep = estabelecimento_local.endereco.cep
-logger.info(f"Cep: {cep}")
 url_laudo = f'http://sistema.elaudos.com/api/laudos/{identificador_estabelecimento_saude}'
 url_estudo = 'http://sistema.elaudos.com/api/estudo/%s'
 url_profissional = 'http://sistema.elaudos.com/api/profissional/%s'
@@ -40,7 +32,6 @@ cred = CREDENTIALS
 make_login = requests.post(url=url_login, json=cred)
 token = make_login.json()['access_token']
 head = {'Authorization': 'Bearer ' + token}
-laudos = requests.get(url=url_laudo, headers=head).json()
 logger.info("Lista de laudos recuperada.")
 # Exames sem laudo na elaudos
 exames_sem_laudo = requests.get(url=url_exames_sem_laudo, headers=head).json()
@@ -54,8 +45,9 @@ if exames_sem_laudo is list:
     # Marca exames localmente como que estejam sem laudo e que tenham situação valida como teste.
     exams_to_set_as_test = edr.set_tuple_as_test(sessao, studies)
     logger.info("Exames marcados como teste.")
-logger.info(f"Quantidade de laudos para integrar = {len(laudos)}")
 
+laudos = requests.get(url=url_laudo, headers=head).json()
+logger.info(f"Quantidade de laudos para integrar = {len(laudos)}")
 for laudo in laudos:
     # Pega atributos de Estudo_Dicom
     data_hora_emissao = laudo['data_hora_emissao']
@@ -68,7 +60,8 @@ for laudo in laudos:
     situacao_envio_his = laudo['situacao_envio_his']
     texto = laudo['texto']
     identificador_profissional_saude = laudo['identificador_profissional_saude']
-    estudo = requests.get(url=url_estudo % identificador_estudo_dicom, headers=head).json()
+    estudo = requests.get(url=url_estudo %
+                          identificador_estudo_dicom, headers=head).json()
     accessionnumber = estudo['accessionnumber']
     chave_primaria_origem = estudo['chave_primaria_origem']
     data_hora_inclusao = estudo['data_hora_inclusao']
@@ -99,7 +92,8 @@ for laudo in laudos:
     ativa = True
     pessa_data_nascimento = profissional['pessoa']['data_nascimento']
     identificador_sexo = profissional['pessoa']['identificador_sexo']
-    usuario_req = requests.get(url=url_usuario % identificador_pessoa, headers=head).json()
+    usuario_req = requests.get(url=url_usuario %
+                               identificador_pessoa, headers=head).json()
     login = usuario_req['login']
     login = str(login + registro_conselho_trabalho.split(' ')[0])
     senha = registro_conselho_trabalho.split(' ')[0]
@@ -138,7 +132,7 @@ for laudo in laudos:
         # Caso nenhum dos 3 existam criar o médico novo
         if not (pessoa_local or ps_local or usuario_local):
             try:
-                ps_novo = medicos.Medicos() \
+                ps_novo = medicos.Medicos \
                     .cadastra_medico(sessao=sessao, crm=registro_conselho_trabalho,
                                      uf=estado_conselho_trabalho, nome=nome,
                                      perfil='ROLE_MEDICO_EXECUTOR',
@@ -164,6 +158,13 @@ for laudo in laudos:
                     sessao.rollback()
                     logger.info(f'Ocorreu um erro ao inserir o laudo {e}')
                     raise Exception
+            elif (estudo_local.situacao_laudo == 'S' or
+                  estudo_local.situacao_laudo == 'C' or
+                  estudo_local.situacao_laudo == 'G') and situacao == 'D':
+                logger.info(
+                    f'Laudo já emitido localmente, mudando sitauação do laudo na elaudos.')
+                url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
+                integra = requests.put(url=url_to_put, headers=head)
 
         else:
             logger.info(
@@ -188,12 +189,22 @@ for laudo in laudos:
                     ledr().insere_laudo(laudo=laudo_entidade, sessao=sessao)
                     estudo_local.situacao = 'V'
                     sessao.commit()
-                    logger.info(f'Laudo id: {laudo_entidade.identificador_laudo_elaudos}, inserido no estudo_local: {estudo_local.identificador}')
+                    logger.info(f'Laudo id: {laudo_entidade.identificador_laudo_elaudos}, inserido no estudo_local:\
+{estudo_local.identificador}')
                     url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                    #integra = requests.put(url=url_to_put, headers=head)
+                    integra = requests.put(url=url_to_put, headers=head)
                 except Exception as e:
                     logger.info(f"Erro ao inserir laudo no exame : {e}")
+            elif (estudo_local.situacao_laudo == 'S' or
+                  estudo_local.situacao_laudo == 'C' or
+                  estudo_local.situacao_laudo == 'G') and situacao == 'D':
+                logger.info(
+                    f'Laudo já emitido localmente, mudando sitauação do laudo na elaudos.')
+                url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
+                integra = requests.put(url=url_to_put, headers=head)
     else:
         logger.info('Estudo não encontrado localmente.')
         logger.info(
             f'{studyinstanceuid} - {identificador_laudo_elaudos} - {identificador_estudo_dicom}')
+
+sessao.close()

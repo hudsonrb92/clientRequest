@@ -2,11 +2,8 @@
 credentials.py
 __pycache__/*
 cliente/*
-.clienteapi/*
+clienteRequest/*
 config.ini
 */__pycache__/*
 ClienteApi.code-workspace
-.idea/ClienteApi.iml
-.idea/misc.xml
-.idea/workspace.xml
-.idea/inspectionProfiles/profiles_settings.xml
+.idea/*
