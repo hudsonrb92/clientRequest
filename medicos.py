@@ -32,7 +32,7 @@ class Medicos:
         # Caso não haja pegar pro padrão 1 isso pode atribuir erros
         if identificador_estabelecimento_saude is None:
             identificador_estabelecimento_saude = 1
-        logger.info('Login = %s, uf = %s, crm = %s', (login, uf, crm))
+        logger.info(f'Login = {login}, uf = {uf}, crm = {crm}')
         # Fazendo uma checagem para verificar se não há nenhum
         # profissional de saúde cadastrados em pessoa model
         p_alchemy = sessao.query(PessoaModel).filter_by(nome=nome).first()

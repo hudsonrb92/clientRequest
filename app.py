@@ -15,8 +15,8 @@ from repositories.pessoa_repositorio import PessoaRepositorio as pr
 from repositories.profissional_saude_repositorio import ProfissionalSaudeRepositorio as psr
 from repositories.usuario_repositorio import UsuarioRepositorio
 
-def integra():
 
+def integra():
     sessao = FabricaConexao().criar_sessao()
     logger.info('Sessão criada ...')
     identificador_estabelecimento_saude = 53
@@ -63,8 +63,7 @@ def integra():
         situacao_envio_his = laudo['situacao_envio_his']
         texto = laudo['texto']
         identificador_profissional_saude = laudo['identificador_profissional_saude']
-        estudo = requests.get(url=url_estudo %
-                                  identificador_estudo_dicom, headers=head).json()
+        estudo = requests.get(url=url_estudo % identificador_estudo_dicom, headers=head).json()
         accessionnumber = estudo['accessionnumber']
         chave_primaria_origem = estudo['chave_primaria_origem']
         data_hora_inclusao = estudo['data_hora_inclusao']
@@ -117,7 +116,7 @@ def integra():
 
             # Criamos aqui a entidade do laudo para não ter que criar novamente no else
             laudo_entidade = LaudoEstudoDicom(data_hora_emissao=data_hora_emissao,
-                                              identificador_estudo_dicom=identificador_estudo_dicom,
+                                              identificador_estudo_dicom=estudo_local.identificador,
                                               situacao=situacao, situacao_envio_his=situacao_envio_his,
                                               texto=texto,
                                               identificador_profissional_saude=identificador_profissional_saude)
@@ -156,7 +155,7 @@ def integra():
                         logger.info(f'Laudo inserido. Study -> {studyinstanceuid}')
                         logger.info(f'Paciente -> {patientname} - {patientid}')
                         url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                        integra = requests.put(url=url_to_put, headers=head)
+                        requests.put(url=url_to_put, headers=head)
                     except Exception as e:
                         sessao.rollback()
                         logger.info(f'Ocorreu um erro ao inserir o laudo {e}')
@@ -167,7 +166,7 @@ def integra():
                     logger.info(
                         f'Laudo já emitido localmente, mudando sitauação do laudo na elaudos.')
                     url_to_put = f'http://sistema.elaudos.com/api/laudo/{laudo_entidade.identificador_laudo_elaudos}'
-                    integra = requests.put(url=url_to_put, headers=head)
+                    requests.put(url=url_to_put, headers=head)
 
             else:
                 logger.info(
