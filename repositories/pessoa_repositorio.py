@@ -6,7 +6,7 @@ class PessoaRepositorio:
 
     @staticmethod
     def pega_pessoa_por_nome(nome, sessao):
-        pessoa = PessoaQuery().lista_pessoa_por_nome(nome, sessao)
+        pessoa = PessoaQuery.lista_pessoa_por_nome(nome, sessao)
         return pessoa
 
     @staticmethod
