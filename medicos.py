@@ -1,5 +1,5 @@
 import hashlib
-
+from base64 import b64decode
 from dominios.db import ProfissionalSaudeModel, EstadoModel, PessoaModel, UsuarioModel, \
     PerfilUsuarioEstabelecimentoSaudeModel, logger
 
@@ -86,7 +86,7 @@ class Medicos:
             # Com o modelo criado verifica se existe assinatura
             if assinatura:
                 # se houver assinatura atribui-se
-                ps_novo.assinatura_digitalizada = assinatura
+                ps_novo.assinatura_digitalizada = b64decode(assinatura)
             logger.info('Profissional de saude model criado')
             try:
                 # persiste-se há informações no banco de dados
